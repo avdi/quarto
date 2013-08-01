@@ -19,6 +19,7 @@ Quarto depends on several external programs which you will need to install befor
 2. Create a `Rakefile` in your book project root.
 3. Add `require "quarto/tasks"` to the top of the Rakefile.
 4. Run `rake -T` to see the available tasks.
+5. The task you care about is probably `rake deliverables`
 
 ## Concepts
 
