@@ -92,6 +92,7 @@ module Lino
   end
 
   def normalize_markdown_export(export_file, section_file)
+    puts "normalize #{export_file} to #{section_file}"
     doc = open(export_file) do |f|
       Nokogiri::HTML(f)
     end
@@ -114,6 +115,7 @@ module Lino
   end
 
   def create_spine_file(spine_file, section_files)
+    puts "create #{spine_file}"
     doc = Nokogiri::XML.parse(SPINE_TEMPLATE)
     doc.root.add_namespace("xi", "http://www.w3.org/2001/XInclude")
     section_files.each do |section_file|
@@ -140,6 +142,7 @@ module Lino
   end
 
   def create_codex_file(codex_file, spine_file)
+    puts "expand #{spine_file} to #{codex_file}"
     Open3.pipeline_r(
       %W[xmllint --xinclude --xmlout #{spine_file}],
       # In order to clean up extraneous namespace declarations we need a second
@@ -160,19 +163,17 @@ module Lino
   end
 
   def create_skeleton_file(skeleton_file, codex_file)
-    puts "Scanning #{codex_file} for source code listings"
+    puts "scan #{codex_file} for source code listings"
     skel_doc = open(codex_file) do |f|
       Nokogiri::XML(f)
     end
     skel_doc.css("pre.sourceCode").each_with_index do |pre_elt, i|
-      puts "Extracting listing #{i}"
       lang = pre_elt["class"].split[1]
       ext  = {"ruby" => "rb"}.fetch(lang){ lang.downcase }
-      puts "Listing has type #{lang}"
       code     = pre_elt.at_css("code").text
       digest   = Digest::SHA1.hexdigest(code)
       listing_path = "#{listings_dir}/#{digest}.#{ext}"
-      puts "Creating listing file #{listing_path}"
+      puts "extract listing #{i} to #{listing_path}"
       open(listing_path, 'w') do |f|
         f.write(strip_listing(code))
       end
@@ -186,6 +187,7 @@ module Lino
       end
       pre_elt.replace(inc_elt)
     end
+    puts "create #{skeleton_file}"
     open(skeleton_file, "w") do |f|
       format_xml(f) do |format_input|
         skel_doc.write_xml_to(format_input)
