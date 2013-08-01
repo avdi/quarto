@@ -14,6 +14,15 @@ task :codex => codex_file
 desc "Strip out code listings for highlighting"
 task :skeleton => skeleton_file
 
+desc "Perform source-code highlighting"
+task :highlight => [skeleton_file] do |t|
+  highlights_needed  = highlights_needed_by(skeleton_file)
+  missing_highlights = highlights_needed - FileList["#{highlights_dir}/*.html"]
+  sub_task = Rake::MultiTask.new("highlight_dynamic", Rake.application)
+  sub_task.enhance(missing_highlights)
+  sub_task.invoke
+end
+
 directory build_dir
 directory export_dir => [build_dir]
 
@@ -47,4 +56,11 @@ directory listings_dir
 
 file skeleton_file => [codex_file, listings_dir] do |t|
   create_skeleton_file(t.name, codex_file)
+end
+
+rule /^#{highlights_dir}\/[[:xdigit:]]+\.html$/ =>
+  [->(highlight_file){listing_for_highlight_file(highlight_file)}] do |t|
+  dir = t.name.pathmap("%d")
+  mkdir_p dir unless File.exist?(dir)
+  sh *%W[pygmentize -o #{t.name} #{t.source}]
 end

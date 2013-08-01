@@ -9,6 +9,8 @@ module Lino
 
   module_function
 
+  XINCLUDE_NS = "http://www.w3.org/2001/XInclude"
+
   EXTENSIONS_TO_SOURCE_FORMATS = {
     "md" => "markdown",
     "markdown" => "markdown",
@@ -157,10 +159,6 @@ module Lino
     "#{build_dir}/listings"
   end
 
-  def highlights_dir
-    "#{build_dir}/highlights"
-  end
-
   def create_skeleton_file(skeleton_file, codex_file)
     puts "Scanning #{codex_file} for source code listings"
     skel_doc = open(codex_file) do |f|
@@ -193,6 +191,22 @@ module Lino
         skel_doc.write_xml_to(format_input)
       end
     end
+  end
+
+  def highlights_dir
+    "#{build_dir}/highlights"
+  end
+
+  def highlights_needed_by(skeleton_file)
+    doc = open(skeleton_file) do |f|
+      Nokogiri::XML(f)
+    end
+    doc.xpath("//xi:include", "xi" => XINCLUDE_NS).map{|e| e["href"]}
+  end
+
+  def listing_for_highlight_file(highlight_file)
+    base = highlight_file.pathmap("%n")
+    FileList["#{listings_dir}/#{base}.*"].first
   end
 
   def strip_listing(code)

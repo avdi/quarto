@@ -58,7 +58,7 @@ describe Lino do
       export_command_for("ch1.md", "ch1.html")
     }
 
-    Then { command == %W[pandoc -w html5 -o ch1.html ch1.md] }
+    Then { command == %W[pandoc --no-highlight -w html5 -o ch1.html ch1.md] }
   end
 
   describe 'source formats' do
