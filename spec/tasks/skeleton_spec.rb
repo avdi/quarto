@@ -33,14 +33,14 @@ END
     <title>Untitled Book</title>
   </head>
   <body>
-    <xi:include href="build/highlights/2c5f3efb5d509c92f1eda3ae6a941fb6645feccc.html">
+    <xi:include href="build/highlights/3361c5f02e08bd44bde2d42633a2c9be201f7ec4.html">
       <xi:fallback>
-        <p>[Missing code listing: build/highlights/2c5f3efb5d509c92f1eda3ae6a941fb6645feccc.html]</p>
+        <p>[Missing code listing: build/highlights/3361c5f02e08bd44bde2d42633a2c9be201f7ec4.html]</p>
       </xi:fallback>
     </xi:include>
-    <xi:include href="build/highlights/2276f33dd4c3607a1a3f9d326a3ddb5dc02007da.html">
+    <xi:include href="build/highlights/e7b17ea0eeebbd00d08674cf9070d287e24dc68e.html">
       <xi:fallback>
-        <p>[Missing code listing: build/highlights/2276f33dd4c3607a1a3f9d326a3ddb5dc02007da.html]</p>
+        <p>[Missing code listing: build/highlights/e7b17ea0eeebbd00d08674cf9070d287e24dc68e.html]</p>
       </xi:fallback>
     </xi:include>
   </body>
@@ -49,12 +49,12 @@ END
   }
 
   And {
-    expect(contents("build/listings/2c5f3efb5d509c92f1eda3ae6a941fb6645feccc.rb")).to eq(<<END)
+    expect(contents("build/listings/3361c5f02e08bd44bde2d42633a2c9be201f7ec4.rb")).to eq(<<END)
 puts "hello, world"
 END
   }
   And {
-    expect(contents("build/listings/2276f33dd4c3607a1a3f9d326a3ddb5dc02007da.c")).to eq(<<END)
+    expect(contents("build/listings/e7b17ea0eeebbd00d08674cf9070d287e24dc68e.c")).to eq(<<END)
 int main(int argc, char** argv) {
   printf("Hello, world\n")
 }

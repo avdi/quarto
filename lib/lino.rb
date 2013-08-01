@@ -171,7 +171,7 @@ module Lino
       lang = pre_elt["class"].split[1]
       ext  = {"ruby" => "rb"}.fetch(lang){ lang.downcase }
       puts "Listing has type #{lang}"
-      code     = pre_elt.text
+      code     = pre_elt.at_css("code").text
       digest   = Digest::SHA1.hexdigest(code)
       listing_path = "#{listings_dir}/#{digest}.#{ext}"
       puts "Creating listing file #{listing_path}"
