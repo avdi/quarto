@@ -3,7 +3,7 @@ require 'lino'
 
 describe Lino do
   include Lino
-  describe 'figuring out sources, exports, and signature paths' do
+  describe 'figuring out sources, exports, and section paths' do
     Given {
       @construct.file "ch1.md"
       @construct.file "Rakefile"
@@ -31,10 +31,10 @@ describe Lino do
     }
 
     And {
-      signature_files.should == [
-        "build/signatures/ch1.xhtml",
-        "build/signatures/subdir/ch2.xhtml",
-        "build/signatures/subdir/ch3.xhtml",
+      section_files.should == [
+        "build/sections/ch1.xhtml",
+        "build/sections/subdir/ch2.xhtml",
+        "build/sections/subdir/ch3.xhtml",
       ]
     }
 
@@ -47,7 +47,7 @@ describe Lino do
     }
 
     And {
-      export_for_signature_file("build/signatures/subdir/ch3.xhtml") ==
+      export_for_section_file("build/sections/subdir/ch3.xhtml") ==
         "build/exports/subdir/ch3.html"
     }
 
@@ -81,12 +81,12 @@ END
     }
 
     Given(:result_doc) {
-      open("signature.xhtml") do |f|
+      open("section.xhtml") do |f|
         Nokogiri::XML(f)
       end
     }
 
-    When { normalize_export("export.html", "signature.xhtml", "markdown") }
+    When { normalize_export("export.html", "section.xhtml", "markdown") }
     Then {
       expect(result_doc.to_s).to eq(<<END)
 <?xml version="1.0"?>

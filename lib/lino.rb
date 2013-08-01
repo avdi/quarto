@@ -12,7 +12,7 @@ module Lino
     "org" => "orgmode"
   }
 
-  SIGNATURE_TEMPLATE = <<-EOF
+  SECTION_TEMPLATE = <<-EOF
   <!DOCTYPE html>
   <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
@@ -57,31 +57,31 @@ module Lino
     %W[pandoc -w html5 -o #{export_file} #{source_file}]
   end
 
-  def signature_dir
-    "build/signatures"
+  def section_dir
+    "build/sections"
   end
 
-  def signature_files
-    export_files.pathmap("%{^#{export_dir},#{signature_dir}}X%{html,xhtml}x")
+  def section_files
+    export_files.pathmap("%{^#{export_dir},#{section_dir}}X%{html,xhtml}x")
   end
 
-  def export_for_signature_file(signature_file)
-    signature_file.pathmap("%{^#{signature_dir},#{export_dir}}X%{xhtml,html}x")
+  def export_for_section_file(section_file)
+    section_file.pathmap("%{^#{section_dir},#{export_dir}}X%{xhtml,html}x")
   end
 
-  def normalize_export(export_file, signature_file, format)
+  def normalize_export(export_file, section_file, format)
     format ||= "NO_FORMAT_GIVEN"
-    send("normalize_#{format}_export", export_file, signature_file)
+    send("normalize_#{format}_export", export_file, section_file)
   end
 
-  def normalize_markdown_export(export_file, signature_file)
+  def normalize_markdown_export(export_file, section_file)
     doc = open(export_file) do |f|
       Nokogiri::HTML(f)
     end
-    normal_doc = Nokogiri::XML.parse(SIGNATURE_TEMPLATE)
+    normal_doc = Nokogiri::XML.parse(SECTION_TEMPLATE)
     normal_doc.at_css("body").replace(doc.at_css("body"))
     normal_doc.at_css("title").content = export_file.pathmap("%n")
-    open(signature_file, "w") do |f|
+    open(section_file, "w") do |f|
       Open3.popen2(*%W[xmllint --format --xmlout -]) do
         |stdin, stdout, wait_thr|
         normal_doc.write_xml_to(stdin)

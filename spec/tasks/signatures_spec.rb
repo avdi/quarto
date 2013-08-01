@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'open3'
 
-describe 'signatures task', task: true do
+describe 'sections task', task: true do
   Given {
     @construct.file "Rakefile", <<END
 require 'lino/tasks'
@@ -21,11 +21,11 @@ END
   }
 
   When {
-    run "rake signatures"
+    run "rake sections"
   }
 
   Then {
-    expect(contents("build/signatures/intro.xhtml")).to eq(<<END)
+    expect(contents("build/sections/intro.xhtml")).to eq(<<END)
 <?xml version="1.0"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -40,7 +40,7 @@ END
 END
   }
   And {
-    expect(contents("build/signatures/section1/ch1.xhtml")).to eq(<<END)
+    expect(contents("build/sections/section1/ch1.xhtml")).to eq(<<END)
 <?xml version="1.0"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
