@@ -109,7 +109,13 @@ module Quarto
       Nokogiri::HTML(f)
     end
     normal_doc = Nokogiri::XML.parse(SECTION_TEMPLATE)
-    normal_doc.at_css("body").replace(doc.at_css("body"))
+    body_elt = normal_doc.at_css("body")
+    if body_elt
+      body_elt.replace(doc.at_css("body"))
+    else
+      body_elt.add_child(
+        normal_doc.create_comment("No content for #{export_file}"))
+    end
     normal_doc.at_css("title").content = export_file.pathmap("%n")
     open(section_file, "w") do |f|
       format_xml(f) do |pipe_input|

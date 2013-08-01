@@ -11,6 +11,7 @@ END
 
 This is the intro
 END
+    @construct.file "empty.md", " "
     @construct.directory "section1" do |d|
       d.file "ch1.md", <<END
 # Hello again
@@ -50,6 +51,20 @@ END
   <body>
     <h1 id="hello-again">Hello again</h1>
     <p>This is chapter 1</p>
+  </body>
+</html>
+END
+    }
+  And {
+    expect(contents("build/sections/empty.xhtml")).to eq(<<END)
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>empty</title>
+  </head>
+  <body>
+    <!-- No content for build/exports/empty.html -->
   </body>
 </html>
 END
