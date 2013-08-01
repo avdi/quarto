@@ -5,6 +5,9 @@ describe 'skeleton task', task: true do
   Given {
     @construct.file "Rakefile", <<END
 require 'quarto/tasks'
+Quarto.configure do |config|
+  config.stylesheets.clear
+end
 END
     @construct.file "ch1.md", <<END
 ```ruby

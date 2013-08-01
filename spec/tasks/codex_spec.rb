@@ -5,6 +5,9 @@ describe 'sections task', task: true do
   Given {
     @construct.file "Rakefile", <<END
 require 'quarto/tasks'
+Quarto.configure do |config|
+  config.stylesheets.clear
+end
 END
     @construct.file "intro.md", <<END
 # Hello, world

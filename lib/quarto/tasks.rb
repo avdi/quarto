@@ -47,8 +47,12 @@ section_files.each do |section_file|
   end
 end
 
-file spine_file => build_dir do |t|
-  create_spine_file(t.name, section_files)
+file code_stylesheet do |t|
+  sh "pygmentize -S colorful -f html > #{t.name}"
+end
+
+file spine_file => [build_dir, code_stylesheet] do |t|
+  create_spine_file(t.name, section_files, stylesheets: Quarto.stylesheets)
 end
 
 file codex_file => [spine_file, *section_files] do |t|

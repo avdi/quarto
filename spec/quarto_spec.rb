@@ -109,7 +109,7 @@ END
       %W[ch1.xhtml ch2.xhtml]
     }
 
-    When{ create_spine_file("spine.xhtml", sources) }
+    When{ create_spine_file("spine.xhtml", sources, stylesheets: []) }
     Then {
       expect(File.read("spine.xhtml")).to eq(<<END)
 <?xml version="1.0"?>

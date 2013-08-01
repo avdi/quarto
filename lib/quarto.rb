@@ -7,6 +7,18 @@ require 'digest/sha1'
 module Quarto
   include Rake::DSL
 
+  def self.configure
+    yield self
+  end
+
+  def self.stylesheets
+    @stylesheets ||= [code_stylesheet]
+  end
+
+  def configuration
+    Quarto
+  end
+
   module_function
 
   XINCLUDE_NS = "http://www.w3.org/2001/XInclude"
@@ -110,14 +122,27 @@ module Quarto
     "build/sources"
   end
 
+  def code_stylesheet
+    "#{build_dir}/code.css"
+  end
+
   def spine_file
     "build/spine.xhtml"
   end
 
-  def create_spine_file(spine_file, section_files)
+  def create_spine_file(spine_file, section_files, options={})
+    options = {stylesheets: configuration.stylesheets}.merge(options)
     puts "create #{spine_file}"
     doc = Nokogiri::XML.parse(SPINE_TEMPLATE)
     doc.root.add_namespace("xi", "http://www.w3.org/2001/XInclude")
+    head_elt = doc.root.at_css("head")
+    stylesheets = Array(options[:stylesheets])
+    stylesheets.each do |stylesheet|
+      head_elt.add_child(
+        doc.create_element(
+          "style",
+          File.read(stylesheet)))
+    end
     section_files.each do |section_file|
       doc.root["xml:base"] = ".."
       body = doc.root.at_css("body")
