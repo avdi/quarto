@@ -2,6 +2,8 @@ require 'quarto'
 
 include Quarto
 
+task :default => :deliverables
+
 desc "Export from source formats to HTML"
 task :export => [*export_files]
 
