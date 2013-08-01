@@ -12,8 +12,22 @@ end
 require 'rspec/given'
 require 'construct'
 
+module TaskSpecHelpers
+  def run(command)
+    @output, @status = Open3.capture2e(command)
+    unless @status.success?
+      raise "Command `#{command}` failed with output:\n#{@output}"
+    end
+  end
+
+  def contents(filename)
+    File.read(filename)
+  end
+end
+
 RSpec.configure do |config|
   config.include Construct::Helpers
+  config.include TaskSpecHelpers, task: true
 
   config.around :each do |example|
     within_construct do |c|

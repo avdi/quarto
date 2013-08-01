@@ -1,18 +1,7 @@
 require 'spec_helper'
 require 'open3'
 
-describe 'export task' do
-  def run(command)
-    @output, @status = Open3.capture2e(command)
-    unless @status.success?
-      raise "Command `#{command}` failed with output:\n#{@output}"
-    end
-  end
-
-  def contents(filename)
-    File.read(filename)
-  end
-
+describe 'export task', task: true do
   Given {
     @construct.file "Rakefile", <<END
 require 'lino/tasks'
