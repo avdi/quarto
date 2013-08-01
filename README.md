@@ -11,7 +11,7 @@ Quarto depends on several external programs which you will need to install befor
 - Pandoc
 - Pygments
 - xmllint
-- PrinceXML
+- PrinceXML (the free trial version is fine)
 
 ## Installation/Usage
 
