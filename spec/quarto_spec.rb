@@ -1,8 +1,8 @@
 require 'spec_helper'
-require 'lino'
+require 'quarto'
 
-describe Lino do
-  include Lino
+describe Quarto do
+  include Quarto
   describe 'figuring out sources, exports, and section paths' do
     Given {
       @construct.file "ch1.md"

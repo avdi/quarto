@@ -1,10 +1,10 @@
-require "lino/version"
+require "quarto/version"
 require 'rake'
 require 'nokogiri'
 require 'open3'
 require 'digest/sha1'
 
-module Lino
+module Quarto
   include Rake::DSL
 
   module_function

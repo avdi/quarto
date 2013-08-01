@@ -1,24 +1,15 @@
-# Lino
+# Quarto
 
-TODO: Write a gem description
+Yet another ebook generation toolchain.
 
-## Installation
+A "Quarto" is a bookbinding term, and this is my fourth attempt at an ebook toolchain.
 
-Add this line to your application's Gemfile:
+## Installation/Usage
 
-    gem 'lino'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install lino
-
-## Usage
-
-TODO: Write usage instructions here
+1. Install the gem (`gem install quarto`)
+2. Create a `Rakefile` in your book project root.
+3. Add `require "quarto/tasks"` to the top of the Rakefile.
+4. Run `rake -T` to see the available tasks.
 
 ## Contributing
 

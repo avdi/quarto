@@ -1,6 +1,6 @@
-require 'lino'
+require 'quarto'
 
-include Lino
+include Quarto
 
 desc "Export from source formats to HTML"
 task :export => [*export_files]

@@ -4,7 +4,7 @@ require 'open3'
 describe 'sections task', task: true do
   Given {
     @construct.file "Rakefile", <<END
-require 'lino/tasks'
+require 'quarto/tasks'
 END
     @construct.file "intro.md", <<END
 # Hello, world

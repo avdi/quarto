@@ -4,7 +4,7 @@ require 'open3'
 describe 'highlight task', task: true do
   Given {
     @construct.file "Rakefile", <<END
-require 'lino/tasks'
+require 'quarto/tasks'
 END
     @construct.file "ch1.md", <<END
 ```ruby

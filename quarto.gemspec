@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'lino/version'
+require 'quarto/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "lino"
-  spec.version       = Lino::VERSION
+  spec.name          = "quarto"
+  spec.version       = Quarto::VERSION
   spec.authors       = ["Avdi Grimm"]
   spec.email         = ["avdi@avdi.org"]
   spec.description   = %q{Yet another ebook publishing toolchain}
