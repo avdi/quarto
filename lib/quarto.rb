@@ -109,9 +109,10 @@ module Quarto
       Nokogiri::HTML(f)
     end
     normal_doc = Nokogiri::XML.parse(SECTION_TEMPLATE)
-    body_elt = normal_doc.at_css("body")
-    if body_elt
-      body_elt.replace(doc.at_css("body"))
+    body_elt        = normal_doc.at_css("body")
+    export_body_elt = doc.at_css("body")
+    if export_body_elt
+      body_elt.replace(export_body_elt)
     else
       body_elt.add_child(
         normal_doc.create_comment("No content for #{export_file}"))
