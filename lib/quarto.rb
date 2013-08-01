@@ -246,6 +246,20 @@ module Quarto
     expand_xinclude(master_file, skeleton_file, format: false)
   end
 
+  def deliverable_dir
+    "#{build_dir}/deliverables"
+  end
+
+  def deliverable_files
+    [pdf_file]
+  end
+
+  def pdf_file
+    "#{deliverable_dir}/book.pdf"
+  end
+
+  private
+
   def format_xml(output_io)
     Open3.popen2(*%W[xmllint --format --xmlout -]) do
       |stdin, stdout, wait_thr|

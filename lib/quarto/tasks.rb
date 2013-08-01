@@ -17,6 +17,9 @@ task :skeleton => skeleton_file
 desc "Create master file suitable for conversion into deliverable formats"
 task :master => master_file
 
+desc "Create finished documents suitable for end-users"
+task :deliverables => deliverable_files
+
 desc "Perform source-code highlighting"
 task :highlight => [skeleton_file] do |t|
   highlights_needed  = highlights_needed_by(skeleton_file)
@@ -74,4 +77,9 @@ end
 
 file master_file => [skeleton_file, :highlight] do |t|
   create_master_file(t.name, skeleton_file)
+end
+
+file pdf_file => [master_file] do |t|
+  mkdir_p t.name.pathmap("%d")
+  sh *%W[prince #{master_file} -o #{t.name}]
 end
