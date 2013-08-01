@@ -14,6 +14,9 @@ task :codex => codex_file
 desc "Strip out code listings for highlighting"
 task :skeleton => skeleton_file
 
+desc "Create master file suitable for conversion into deliverable formats"
+task :master => master_file
+
 desc "Perform source-code highlighting"
 task :highlight => [skeleton_file] do |t|
   highlights_needed  = highlights_needed_by(skeleton_file)
@@ -63,4 +66,8 @@ rule /^#{highlights_dir}\/[[:xdigit:]]+\.html$/ =>
   dir = t.name.pathmap("%d")
   mkdir_p dir unless File.exist?(dir)
   sh *%W[pygmentize -o #{t.name} #{t.source}]
+end
+
+file master_file => [skeleton_file, :highlight] do |t|
+  create_master_file(t.name, skeleton_file)
 end

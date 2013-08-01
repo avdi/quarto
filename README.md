@@ -4,6 +4,14 @@ Yet another ebook generation toolchain.
 
 A "Quarto" is a bookbinding term, and this is my fourth attempt at an ebook toolchain.
 
+## Requirements
+
+Quarto depends on several external programs which you will need to install before using it.
+
+- Pandoc
+- Pygments
+- xmllint
+
 ## Installation/Usage
 
 1. Install the gem (`gem install quarto`)

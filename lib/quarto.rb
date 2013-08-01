@@ -142,16 +142,7 @@ module Quarto
   end
 
   def create_codex_file(codex_file, spine_file)
-    puts "expand #{spine_file} to #{codex_file}"
-    Open3.pipeline_r(
-      %W[xmllint --xinclude --xmlout #{spine_file}],
-      # In order to clean up extraneous namespace declarations we need a second
-      # xmllint process
-      %W[xmllint --format --nsclean --xmlout -]) do |output, wait_thr|
-      open(codex_file, 'w') do |f|
-        IO.copy_stream(output, f)
-      end
-    end
+    expand_xinclude(codex_file, spine_file)
   end
 
   def skeleton_file
@@ -211,6 +202,7 @@ module Quarto
     FileList["#{listings_dir}/#{base}.*"].first
   end
 
+  # Strip extraneous whitespace from around a code listing
   def strip_listing(code)
     code.gsub!(/\t/, "  ")
     lines  = code.split("\n")
@@ -221,12 +213,38 @@ module Quarto
     lines.map{|l| l.slice(indent..-1)}.join("\n") + "\n"
   end
 
+  def master_file
+    "#{build_dir}/master.xhtml"
+  end
+
+  def create_master_file(master_file, skeleton_file)
+    expand_xinclude(master_file, skeleton_file, format: false)
+  end
+
   def format_xml(output_io)
     Open3.popen2(*%W[xmllint --format --xmlout -]) do
       |stdin, stdout, wait_thr|
       yield(stdin)
       stdin.close
       IO.copy_stream(stdout, output_io)
+    end
+  end
+
+  def expand_xinclude(output_file, input_file, options={})
+    options = {format: true}.merge(options)
+    puts "expand #{input_file} to #{output_file}"
+    cleanup_args = %W[--nsclean --xmlout]
+    if options[:format]
+      cleanup_args << "--format"
+    end
+    Open3.pipeline_r(
+      %W[xmllint --xinclude --xmlout #{input_file}],
+      # In order to clean up extraneous namespace declarations we need a second
+      # xmllint process
+      ["xmllint",  *cleanup_args, "-"]) do |output, wait_thr|
+      open(output_file, 'w') do |f|
+        IO.copy_stream(output, f)
+      end
     end
   end
 end
