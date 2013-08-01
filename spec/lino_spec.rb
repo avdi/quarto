@@ -210,4 +210,26 @@ EOF
 END
     }
   end
+
+  describe "stripping source code" do
+    Given(:code) {
+      code = <<END
+
+
+    puts "hello, world
+    if true
+      puts "goodbye, world
+    end
+
+END
+    }
+    Then{
+      expect(strip_listing(code)).to eq(<<END)
+puts "hello, world
+if true
+  puts "goodbye, world
+end
+END
+    }
+  end
 end

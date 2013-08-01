@@ -11,6 +11,9 @@ task :sections => [*section_files]
 desc "Build a single XHTML file codex combining all sections"
 task :codex => codex_file
 
+desc "Strip out code listings for highlighting"
+task :skeleton => skeleton_file
+
 directory build_dir
 directory export_dir => [build_dir]
 
@@ -38,4 +41,10 @@ end
 
 file codex_file => [spine_file, *section_files] do |t|
   create_codex_file(t.name, spine_file)
+end
+
+directory listings_dir
+
+file skeleton_file => [codex_file, listings_dir] do |t|
+  create_skeleton_file(t.name, codex_file)
 end

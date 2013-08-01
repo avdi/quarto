@@ -2,6 +2,7 @@ require "lino/version"
 require 'rake'
 require 'nokogiri'
 require 'open3'
+require 'digest/sha1'
 
 module Lino
   include Rake::DSL
@@ -68,7 +69,7 @@ module Lino
   end
 
   def export_command_for(source_file, export_file)
-    %W[pandoc -w html5 -o #{export_file} #{source_file}]
+    %W[pandoc --no-highlight -w html5 -o #{export_file} #{source_file}]
   end
 
   def section_dir
@@ -146,6 +147,62 @@ module Lino
         IO.copy_stream(output, f)
       end
     end
+  end
+
+  def skeleton_file
+    "#{build_dir}/skeleton.xhtml"
+  end
+
+  def listings_dir
+    "#{build_dir}/listings"
+  end
+
+  def highlights_dir
+    "#{build_dir}/highlights"
+  end
+
+  def create_skeleton_file(skeleton_file, codex_file)
+    puts "Scanning #{codex_file} for source code listings"
+    skel_doc = open(codex_file) do |f|
+      Nokogiri::XML(f)
+    end
+    skel_doc.css("pre.sourceCode").each_with_index do |pre_elt, i|
+      puts "Extracting listing #{i}"
+      lang = pre_elt["class"].split[1]
+      ext  = {"ruby" => "rb"}.fetch(lang){ lang.downcase }
+      puts "Listing has type #{lang}"
+      code     = pre_elt.text
+      digest   = Digest::SHA1.hexdigest(code)
+      listing_path = "#{listings_dir}/#{digest}.#{ext}"
+      puts "Creating listing file #{listing_path}"
+      open(listing_path, 'w') do |f|
+        f.write(strip_listing(code))
+      end
+      highlight_path = "#{highlights_dir}/#{digest}.html"
+      inc_elt = skel_doc.create_element("xi:include") do |elt|
+        elt["href"] = highlight_path
+        elt.add_child(
+          "<xi:fallback>"\
+          "<p>[Missing code listing: #{highlight_path}]</p>"\
+          "</xi:fallback>")
+      end
+      pre_elt.replace(inc_elt)
+    end
+    open(skeleton_file, "w") do |f|
+      format_xml(f) do |format_input|
+        skel_doc.write_xml_to(format_input)
+      end
+    end
+  end
+
+  def strip_listing(code)
+    code.gsub!(/\t/, "  ")
+    lines  = code.split("\n")
+    first_code_line = lines.index{|l| l =~ /\S/}
+    last_code_line  = lines.rindex{|l| l =~ /\S/}
+    lines = lines[first_code_line..last_code_line]
+    indent = lines.map{|l| l.index(/[^ ]/)}.min
+    lines.map{|l| l.slice(indent..-1)}.join("\n") + "\n"
   end
 
   def format_xml(output_io)
