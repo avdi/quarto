@@ -2,7 +2,7 @@
 
 Yet another ebook generation toolchain.
 
-A "Quarto" is a bookbinding term, and this is my fourth attempt at an ebook toolchain.
+"Quarto" is a bookbinding term, and this is my fourth attempt at an ebook toolchain.
 
 ## Requirements
 
