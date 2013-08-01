@@ -103,4 +103,111 @@ END
 END
     }
   end
+
+  describe 'creating a spine file' do
+    Given(:sources) {
+      %W[ch1.xhtml ch2.xhtml]
+    }
+
+    When{ create_spine_file("spine.xhtml", sources) }
+    Then {
+      expect(File.read("spine.xhtml")).to eq(<<END)
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xi="http://www.w3.org/2001/XInclude" xml:base="..">
+  <head>
+    <title>Untitled Book</title>
+  </head>
+  <body>
+    <xi:include href="ch1.xhtml" xpointer="xmlns(ns=http://www.w3.org/1999/xhtml)xpointer(//ns:body/*)">
+      <xi:fallback>
+        <p>[Missing section: ch1.xhtml]</p>
+      </xi:fallback>
+    </xi:include>
+    <xi:include href="ch2.xhtml" xpointer="xmlns(ns=http://www.w3.org/1999/xhtml)xpointer(//ns:body/*)">
+      <xi:fallback>
+        <p>[Missing section: ch2.xhtml]</p>
+      </xi:fallback>
+    </xi:include>
+  </body>
+</html>
+END
+    }
+  end
+
+
+  describe 'creating a codex file' do
+    Given {
+      @construct.file("ch1.xhtml", <<EOF)
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>ch1</title>
+  </head>
+  <body>
+    <p>This is chapter 1</p>
+    <p>Also chapter 1</p>
+  </body>
+</html>
+EOF
+      @construct.file("ch2.xhtml", <<EOF)
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>ch1</title>
+  </head>
+  <body>
+    <p>This is chapter 2</p>
+  </body>
+</html>
+EOF
+      @construct.file("spine.xhtml", <<EOF)
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <head>
+    <title>Untitled Book</title>
+  </head>
+  <body>
+    <xi:include href="ch1.xhtml" xpointer="xmlns(ns=http://www.w3.org/1999/xhtml)xpointer(//ns:body/*)">
+      <xi:fallback>
+        <p>[Missing section: ch1.xhtml]</p>
+      </xi:fallback>
+    </xi:include>
+    <xi:include href="ch2.xhtml" xpointer="xmlns(ns=http://www.w3.org/1999/xhtml)xpointer(//ns:body/*)">
+      <xi:fallback>
+        <p>[Missing section: ch2.xhtml]</p>
+      </xi:fallback>
+    </xi:include>
+    <xi:include href="ch3.xhtml" xpointer="xmlns(ns=http://www.w3.org/1999/xhtml)xpointer(//ns:body/*)">
+      <xi:fallback>
+        <p>[Missing section: ch3.xhtml]</p>
+      </xi:fallback>
+    </xi:include>
+  </body>
+</html>
+EOF
+    }
+
+    When{ create_codex_file("codex.xhtml", "spine.xhtml") }
+    Then {
+      expect(File.read("codex.xhtml")).to eq(<<END)
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <head>
+    <title>Untitled Book</title>
+  </head>
+  <body>
+    <p>This is chapter 1</p>
+    <p>Also chapter 1</p>
+    <p>This is chapter 2</p>
+    <p>[Missing section: ch3.xhtml]</p>
+  </body>
+</html>
+END
+    }
+  end
 end

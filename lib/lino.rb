@@ -4,6 +4,8 @@ require 'nokogiri'
 require 'open3'
 
 module Lino
+  include Rake::DSL
+
   module_function
 
   EXTENSIONS_TO_SOURCE_FORMATS = {
@@ -22,6 +24,18 @@ module Lino
     </body>
   </html>
   EOF
+
+  SPINE_TEMPLATE = <<-EOF
+  <!DOCTYPE html>
+  <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+      <title>Untitled Book</title>
+    </head>
+    <body>
+    </body>
+  </html>
+  EOF
+
   def build_dir
     "build"
   end
@@ -35,7 +49,7 @@ module Lino
     EXTENSIONS_TO_SOURCE_FORMATS.fetch(ext)
   end
 
-  def source_files()
+  def source_files
     FileList["**/*.{#{source_exts.join(',')}}"]
   end
 
@@ -82,12 +96,64 @@ module Lino
     normal_doc.at_css("body").replace(doc.at_css("body"))
     normal_doc.at_css("title").content = export_file.pathmap("%n")
     open(section_file, "w") do |f|
-      Open3.popen2(*%W[xmllint --format --xmlout -]) do
-        |stdin, stdout, wait_thr|
-        normal_doc.write_xml_to(stdin)
-        stdin.close
-        IO.copy_stream(stdout, f)
+      format_xml(f) do |pipe_input|
+        normal_doc.write_xml_to(pipe_input)
       end
+    end
+  end
+
+  def source_list_file
+    "build/sources"
+  end
+
+  def spine_file
+    "build/spine.xhtml"
+  end
+
+  def create_spine_file(spine_file, section_files)
+    doc = Nokogiri::XML.parse(SPINE_TEMPLATE)
+    doc.root.add_namespace("xi", "http://www.w3.org/2001/XInclude")
+    section_files.each do |section_file|
+      doc.root["xml:base"] = ".."
+      body = doc.root.at_css("body")
+      body.add_child(doc.create_element("xi:include") do |inc_elt|
+          inc_elt["href"]     = section_file
+          inc_elt["xpointer"] = "xmlns(ns=http://www.w3.org/1999/xhtml)xpointer(//ns:body/*)"
+          inc_elt.add_child(doc.create_element("xi:fallback") do |fallback_elt|
+              fallback_elt.add_child(doc.create_element("p",
+                  "[Missing section: #{section_file}]"))
+            end)
+        end)
+    end
+    open(spine_file, 'w') do |f|
+      format_xml(f) do |format_input|
+        doc.write_to(format_input)
+      end
+    end
+  end
+
+  def codex_file
+    "build/codex.xhtml"
+  end
+
+  def create_codex_file(codex_file, spine_file)
+    Open3.pipeline_r(
+      %W[xmllint --xinclude --xmlout #{spine_file}],
+      # In order to clean up extraneous namespace declarations we need a second
+      # xmllint process
+      %W[xmllint --format --nsclean --xmlout -]) do |output, wait_thr|
+      open(codex_file, 'w') do |f|
+        IO.copy_stream(output, f)
+      end
+    end
+  end
+
+  def format_xml(output_io)
+    Open3.popen2(*%W[xmllint --format --xmlout -]) do
+      |stdin, stdout, wait_thr|
+      yield(stdin)
+      stdin.close
+      IO.copy_stream(stdout, output_io)
     end
   end
 end

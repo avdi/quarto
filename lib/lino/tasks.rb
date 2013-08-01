@@ -8,8 +8,8 @@ task :export => [*export_files]
 desc "Generate normalized XHTML versions of exports"
 task :sections => [*section_files]
 
-desc "Alias for 'sections' task"
-task :normalize => :sections
+desc "Build a single XHTML file codex combining all sections"
+task :codex => codex_file
 
 directory build_dir
 directory export_dir => [build_dir]
@@ -30,4 +30,12 @@ section_files.each do |section_file|
     mkdir_p section_file.pathmap("%d")
     normalize_export(export_file, section_file, source_format)
   end
+end
+
+file spine_file => build_dir do |t|
+  create_spine_file(t.name, section_files)
+end
+
+file codex_file => [spine_file, *section_files] do |t|
+  create_codex_file(t.name, spine_file)
 end
