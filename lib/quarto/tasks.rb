@@ -85,3 +85,8 @@ file pdf_file => [master_file] do |t|
   mkdir_p t.name.pathmap("%d")
   sh *%W[prince #{master_file} -o #{t.name}]
 end
+
+file latex_file => [master_file] do |t|
+  mkdir_p t.name.pathmap("%d")
+  sh *%W[pandoc -o #{t.name} #{master_file}]
+end

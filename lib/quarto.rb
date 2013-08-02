@@ -281,11 +281,15 @@ module Quarto
   end
 
   def deliverable_files
-    [pdf_file]
+    [pdf_file, latex_file]
   end
 
   def pdf_file
     "#{deliverable_dir}/book.pdf"
+  end
+
+  def latex_file
+    "#{deliverable_dir}/book.latex"
   end
 
   private
