@@ -15,6 +15,14 @@ module Quarto
     @stylesheets ||= [code_stylesheet]
   end
 
+  def self.source_exclusions
+    @source_exclusions ||= ["#{build_dir}/*", ".git/*"]
+  end
+
+  def self.exclude_source(exclude_glob)
+    source_exclusions << exclude_glob
+  end
+
   def configuration
     Quarto
   end
@@ -65,7 +73,22 @@ module Quarto
   end
 
   def source_files
-    FileList["**/*.{#{source_exts.join(',')}}"]
+    @source_files ||= FileList.new("**/*.{#{source_exts.join(',')}}") do |files|
+      configuration.source_exclusions.each do |exclusion|
+        files.exclude(exclusion)
+        files.exclude do |file|
+          # First check that this is a git repo
+          next false unless system("git status -s > /dev/null 2>&1")
+          # See if it is a registered file with git
+          ls_git = `git ls-files #{file}`
+          # See if it is an unregistered but un-ignored file
+          ls_other =
+            `git ls-files --others --exclude-per-directory .gitignore #{file}`
+          # If it shows up in neither of the above, exclude it
+          ls_git.empty? && ls_other.empty?
+        end
+      end
+    end
   end
 
   def export_dir

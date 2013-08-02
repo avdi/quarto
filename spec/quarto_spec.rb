@@ -5,12 +5,33 @@ describe Quarto do
   include Quarto
   describe 'figuring out sources, exports, and section paths' do
     Given {
+      system("git init")
       @construct.file "ch1.md"
       @construct.file "Rakefile"
       @construct.directory "subdir" do |d|
         d.file "ch2.markdown"
         d.file "ch3.org"
         d.file "README.txt"
+      end
+      @construct.directory "build" do |d|
+        d.file "ignore_me.md"
+      end
+      @construct.file ".gitignore" do |f|
+        f << "/scratch\n"
+        f << "~*\n"
+      end
+      @construct.directory "scratch" do |d|
+        d.file "scratch.md"
+      end
+      @construct.file "~foo.md"
+      @construct.file "ignored_by_config.md"
+      p `git ls-files --others`
+      p File.read(".gitignore")
+    }
+
+    Given {
+      Quarto.configure do |config|
+        config.exclude_source("ignored*")
       end
     }
 
