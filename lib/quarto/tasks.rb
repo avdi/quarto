@@ -88,5 +88,5 @@ end
 
 file latex_file => [master_file] do |t|
   mkdir_p t.name.pathmap("%d")
-  sh *%W[pandoc -o #{t.name} #{master_file}]
+  sh *%W[pandoc --standalone -o #{t.name} #{master_file}]
 end
