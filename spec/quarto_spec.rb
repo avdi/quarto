@@ -165,7 +165,7 @@ END
       %W[ch1.xhtml ch2.xhtml]
     }
 
-    When{ create_spine_file("spine.xhtml", sources, stylesheets: []) }
+    When{ create_spine_file("spine.xhtml", sources, stylesheets: [], metadata: false) }
     Then {
       expect(File.read("spine.xhtml")).to eq(<<END)
 <?xml version="1.0"?>
@@ -173,6 +173,7 @@ END
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:xi="http://www.w3.org/2001/XInclude" xml:base="..">
   <head>
     <title>Untitled Book</title>
+    <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"/>
   </head>
   <body>
     <xi:include href="ch1.xhtml" xpointer="xmlns(ns=http://www.w3.org/1999/xhtml)xpointer(//ns:body/*)">

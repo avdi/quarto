@@ -3,12 +3,29 @@ require 'rake'
 require 'nokogiri'
 require 'open3'
 require 'digest/sha1'
+require 'etc'
+require 'fattr'
+require 'time'
 
 module Quarto
   include Rake::DSL
 
+  Fattr :metadata    => true
+  Fattr(:authors) {
+    [Etc.getpwnam(Etc.getlogin).gecos.split(',')[0]]
+  }
+  Fattr :title       => "Untitled Book"
+  Fattr :description => ""
+  Fattr :language    => ENV["LANG"].to_s.split(".").first
+  Fattr(:date) {        Time.now.iso8601 }
+  Fattr :git         => true
+
   def self.configure
     yield self
+  end
+
+  def self.configuration
+    Quarto
   end
 
   def self.stylesheets
@@ -23,8 +40,12 @@ module Quarto
     source_exclusions << exclude_glob
   end
 
-  def self.source_files=(source_files)
-    @source_files = source_files
+  def self.source_files=(new_source_files)
+    @source_files = Rake::FileList[*new_source_files]
+  end
+
+  def self.author=(sole_author)
+    self.authors = [sole_author]
   end
 
   def self.reset
@@ -34,6 +55,10 @@ module Quarto
 
   def configuration
     Quarto
+  end
+
+  def source_files
+    configuration.source_files
   end
 
   module_function
@@ -62,6 +87,7 @@ module Quarto
   <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
       <title>Untitled Book</title>
+      <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"/>
     </head>
     <body>
     </body>
@@ -81,11 +107,12 @@ module Quarto
     EXTENSIONS_TO_SOURCE_FORMATS.fetch(ext)
   end
 
-  def source_files
+  def self.source_files
     @source_files ||= FileList.new("**/*.{#{source_exts.join(',')}}") do |files|
       configuration.source_exclusions.each do |exclusion|
         files.exclude(exclusion)
         files.exclude do |file|
+          next false unless configuration.git?
           # First check that this is a git repo
           next false unless system("git status -s > /dev/null 2>&1")
           # See if it is a registered file with git
@@ -105,6 +132,7 @@ module Quarto
   end
 
   def export_files
+    p source_files
     source_files.pathmap("#{export_dir}/%p").ext('.html')
   end
 
@@ -170,9 +198,14 @@ module Quarto
   end
 
   def create_spine_file(spine_file, section_files, options={})
-    options = {stylesheets: configuration.stylesheets}.merge(options)
+    options = {
+      stylesheets: configuration.stylesheets,
+      metadata:    configuration.metadata
+    }.merge(options)
     puts "create #{spine_file}"
     doc = Nokogiri::XML.parse(SPINE_TEMPLATE)
+    doc.root.at_css("title").content = configuration.title
+    add_metadata_to_doc(doc) if options[:metadata]
     doc.root.add_namespace("xi", "http://www.w3.org/2001/XInclude")
     head_elt = doc.root.at_css("head")
     stylesheets = Array(options[:stylesheets])
@@ -198,6 +231,29 @@ module Quarto
       format_xml(f) do |format_input|
         doc.write_to(format_input)
       end
+    end
+  end
+
+  def add_metadata_to_doc(doc)
+    head_elt = doc.at_css("head")
+    add_metadata_element(doc, head_elt, "author", configuration.authors.join(", "))
+    add_metadata_element(doc, head_elt, "date", configuration.date)
+    add_metadata_element(doc, head_elt, "subject", configuration.description)
+    add_metadata_element(doc, head_elt, "generator", "Quarto")
+    add_metadata_element(doc, head_elt, "DC.title", configuration.title)
+    add_metadata_element(doc, head_elt, "DC.creator", configuration.authors)
+    add_metadata_element(
+      doc, head_elt, "DC.description", configuration.description)
+    add_metadata_element(doc, head_elt, "DC.date", configuration.date)
+    add_metadata_element(doc, head_elt, "DC.language", configuration.language)
+  end
+
+  def add_metadata_element(doc, parent, name, value)
+    Array(value).each do |value|
+      parent.add_child(doc.create_element("meta") do |meta|
+          meta["name"]    = name
+          meta["content"] = value
+        end)
     end
   end
 
@@ -299,6 +355,15 @@ module Quarto
 
   def latex_file
     "#{deliverable_dir}/book.latex"
+  end
+
+  def pandoc_vars
+    [
+      "-Vtitle=#{configuration.title}",
+      "-Vauthor=#{configuration.authors.join(', ')}",
+      "-Vdate=#{configuration.date}",
+      "-Vlang=#{configuration.language}"
+    ]
   end
 
   private

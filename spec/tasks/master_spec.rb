@@ -7,6 +7,7 @@ describe 'master task', task: true do
 require 'quarto/tasks'
 Quarto.configure do |config|
   config.stylesheets.clear
+  config.metadata = false
 end
 END
     @construct.file "ch1.md", <<END
@@ -36,6 +37,7 @@ END
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:xi="http://www.w3.org/2001/XInclude" xml:base="..">
   <head>
     <title>Untitled Book</title>
+    <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"/>
   </head>
   <body>
     <p xml:base="build/sections/ch1.xhtml">

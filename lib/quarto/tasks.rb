@@ -2,6 +2,8 @@ require 'quarto'
 
 include Quarto
 
+load ".quarto" if File.readable?(".quarto")
+
 task :default => :deliverables
 
 desc "Export from source formats to HTML"
@@ -88,5 +90,5 @@ end
 
 file latex_file => [master_file] do |t|
   mkdir_p t.name.pathmap("%d")
-  sh *%W[pandoc --standalone -o #{t.name} #{master_file}]
+  sh "pandoc", *pandoc_vars, *%W[--standalone -o #{t.name} #{master_file}]
 end

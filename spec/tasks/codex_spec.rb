@@ -7,6 +7,7 @@ describe 'sections task', task: true do
 require 'quarto/tasks'
 Quarto.configure do |config|
   config.stylesheets.clear
+  config.metadata = false
 end
 END
     @construct.file "intro.md", <<END
@@ -34,6 +35,7 @@ END
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:xi="http://www.w3.org/2001/XInclude" xml:base="..">
   <head>
     <title>Untitled Book</title>
+    <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"/>
   </head>
   <body>
     <h1 id="hello-world" xml:base="build/sections/intro.xhtml">Hello, world</h1>
@@ -45,5 +47,48 @@ END
 END
   }
 
+  context 'with custom metadata' do
+    Given {
+      @construct.file "Rakefile", <<END
+require 'quarto/tasks'
+Quarto.configure do |config|
+  config.stylesheets.clear
+  config.metadata = true
 
+  config.author = "Avdi Grimm"
+  config.title  = "Hello World, The Book"
+  config.description = "The greatest book ever written"
+  config.language    = "en-US"
+  config.date        = "2013-08-01"
+end
+END
+    }
+    Then {
+      expect(contents("build/codex.xhtml")).to eq(<<END)
+<?xml version="1.0"?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:xi="http://www.w3.org/2001/XInclude" xml:base="..">
+  <head>
+    <title>Hello World, The Book</title>
+    <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"/>
+    <meta name="author" content="Avdi Grimm"/>
+    <meta name="date" content="2013-08-01"/>
+    <meta name="subject" content="The greatest book ever written"/>
+    <meta name="generator" content="Quarto"/>
+    <meta name="DC.title" content="Hello World, The Book"/>
+    <meta name="DC.creator" content="Avdi Grimm"/>
+    <meta name="DC.description" content="The greatest book ever written"/>
+    <meta name="DC.date" content="2013-08-01"/>
+    <meta name="DC.language" content="en-US"/>
+  </head>
+  <body>
+    <h1 id="hello-world" xml:base="build/sections/intro.xhtml">Hello, world</h1>
+    <p xml:base="build/sections/intro.xhtml">This is the intro</p>
+    <h1 id="hello-again" xml:base="build/sections/section1/ch1.xhtml">Hello again</h1>
+    <p xml:base="build/sections/section1/ch1.xhtml">This is chapter 1</p>
+  </body>
+</html>
+END
+    }
+  end
 end
