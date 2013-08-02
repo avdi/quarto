@@ -23,6 +23,15 @@ module Quarto
     source_exclusions << exclude_glob
   end
 
+  def self.source_files=(source_files)
+    @source_files = source_files
+  end
+
+  def self.reset
+    @stylesheets       = nil
+    @source_exclusions = nil
+  end
+
   def configuration
     Quarto
   end

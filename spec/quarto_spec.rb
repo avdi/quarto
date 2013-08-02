@@ -72,6 +72,41 @@ describe Quarto do
         "build/exports/subdir/ch3.html"
     }
 
+    context 'with an explicitly set source list' do
+      Given {
+        Quarto.configure do |config|
+          config.source_files = [
+            "ch1.md",
+            "subdir/ch3.org"
+          ]
+        end
+
+        Then {
+          source_files.should == [
+            "ch1.md",
+            "subdir/ch3.org"
+          ]
+        }
+
+        And {
+          export_files.should == [
+            "build/exports/ch1.html",
+            "build/exports/subdir/ch3.html",
+          ]
+        }
+
+        And {
+          section_files.should == [
+            "build/sections/ch1.xhtml",
+            "build/sections/subdir/ch3.xhtml",
+          ]
+        }
+      }
+    end
+
+    after do
+      Quarto.reset
+    end
   end
 
   describe 'export commands' do
