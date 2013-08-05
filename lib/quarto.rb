@@ -401,11 +401,34 @@ END
   end
 
   def master_file
-    "#{build_dir}/master.xhtml"
+    "#{master_dir}/master.xhtml"
+  end
+
+  def master_dir
+    "#{build_dir}/master"
   end
 
   def create_master_file(master_file, skeleton_file)
+    mkdir_p(master_file.pathmap("%d"))
     expand_xinclude(master_file, skeleton_file, format: false)
+  end
+
+  def assets_file
+    "#{build_dir}/assets.timestamp"
+  end
+
+  def copy_assets(master_file, assets_dir)
+    doc = open(master_file) do |f|
+      Nokogiri::XML(f)
+    end
+    asset_elts = doc.css("*[src]")
+    asset_elts.each do |elt|
+      asset_path = Pathname(elt["src"]).cleanpath
+      rel_path   = asset_path.relative_path_from(Pathname("."))
+      dest       = Pathname(assets_dir) + rel_path
+      mkdir_p dest.dirname
+      ln_sf asset_path.relative_path_from(dest.dirname), dest
+    end
   end
 
   def deliverable_dir

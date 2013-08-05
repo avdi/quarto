@@ -19,7 +19,7 @@ desc "Strip out code listings for highlighting"
 task :skeleton => skeleton_file
 
 desc "Create master file suitable for conversion into deliverable formats"
-task :master => master_file
+task :master => [master_file, assets_file]
 
 desc "Create finished documents suitable for end-users"
 task :deliverables => deliverable_files
@@ -83,17 +83,22 @@ file master_file => [skeleton_file, :highlight] do |t|
   create_master_file(t.name, skeleton_file)
 end
 
-file pdf_file => [master_file] do |t|
+file pdf_file => [master_file, assets_file] do |t|
   mkdir_p t.name.pathmap("%d")
   sh *%W[prince #{master_file} -o #{t.name}]
 end
 
-file latex_file => [master_file] do |t|
+file latex_file => [master_file, assets_file] do |t|
   mkdir_p t.name.pathmap("%d")
   sh "pandoc", *pandoc_vars, *%W[--standalone -o #{t.name} #{master_file}]
 end
 
 directory vendor_dir
+
+file assets_file => master_file do |t|
+  copy_assets(master_file, master_dir)
+  touch assets_file
+end
 
 namespace :orgmode do
   task :vendor => vendor_orgmode_dir

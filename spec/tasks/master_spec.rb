@@ -16,7 +16,14 @@ END
 puts "hello, world"
 ```
 <p>After listing 0</p>
+
+<img src="images/image1.png"/>
 END
+
+    @construct.directory("images") do |d|
+      d.file "image1.png", "IMAGE1"
+    end
+
     @construct.file "ch2.md", <<END
 ```c
 int main(int argc, char** argv) {
@@ -31,7 +38,7 @@ END
   }
 
   Then {
-    expect(contents("build/master.xhtml")).to eq(<<END)
+    expect(contents("build/master/master.xhtml")).to eq(<<END)
 <?xml version="1.0"?>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:xi="http://www.w3.org/2001/XInclude" xml:base="..">
@@ -48,6 +55,9 @@ Before listing 0
     <p>
 After listing 0
 </p>
+    <p>
+      <img src="images/image1.png"/>
+    </p>
     <div class="highlight"><pre><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">printf</span><span class="p">(</span><span class="s">"Hello, world</span>
 <span class="s">")</span>
@@ -56,5 +66,10 @@ After listing 0
   </body>
 </html>
 END
+  }
+
+  And {
+    puts `ls -la build/master/images`
+    expect(contents("build/master/images/image1.png")).to eq("IMAGE1")
   }
 end
