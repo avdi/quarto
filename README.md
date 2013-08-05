@@ -78,7 +78,7 @@ Quarto.configure do |config|
 end
 ```
 
-This block *can* be placed in your `Rakefile` after `quarto/tasks` is required, but this may cause problems depending on your project. It is currently recommended that you put your configuration in a `.quarto` file in your project root instead.
+This block *can* be placed in your `Rakefile` after `quarto/tasks` is required, but this may cause problems depending on your project. It is currently recommended that you put your configuration in a `.quarto.conf` file in your project root instead.
 
 ### Explicitly setting source files
 
