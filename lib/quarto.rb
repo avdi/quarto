@@ -240,6 +240,15 @@ END
             pre_elt.add_child(normal_doc.create_element("code", elt.text))
           end)
       end
+      figure_elts = normal_doc.css("div.figure")
+      figure_elts.each do |elt|
+        img_elt = elt.css("img")
+        caption = elt.at_css("p:nth-child(2)").content
+        elt.replace(normal_doc.create_element("figure") do |fig_elt|
+            fig_elt.add_child(img_elt)
+            fig_elt.add_child(normal_doc.create_element("figcaption", caption))
+          end)
+      end
     end
   end
 
