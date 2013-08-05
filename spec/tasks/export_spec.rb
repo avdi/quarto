@@ -5,10 +5,6 @@ describe 'export task', task: true do
   Given {
     @construct.file "Rakefile", <<"END"
 require 'quarto/tasks'
-
-Quarto.configure do |config|
-  config.emacs_load_path << "#{VENDOR_ORG_MODE_DIR}"
-end
 END
   }
 
@@ -58,6 +54,14 @@ Hello from Org-Mode!
 puts 1 + 1
 #+END_SRC
 
+EOF
+
+      @construct.file ".quarto.conf", <<EOF
+require 'quarto/orgmode'
+
+Quarto.configure do |config|
+  config.orgmode.emacs_load_path << "#{VENDOR_ORG_MODE_DIR}"
+end
 EOF
     }
 

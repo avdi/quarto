@@ -19,12 +19,6 @@ module Quarto
       "xi"    => XINCLUDE_NS,
     }
 
-    EXTENSIONS_TO_SOURCE_FORMATS = {
-      "md"       => "markdown",
-      "markdown" => "markdown",
-      "org"      => "orgmode"
-    }
-
     SECTION_TEMPLATE = <<-EOF
   <!DOCTYPE html>
   <html xmlns="http://www.w3.org/1999/xhtml">
@@ -48,23 +42,6 @@ module Quarto
   </html>
   EOF
 
-    ORG_EXPORT_ASYNC     = "nil"
-    ORG_EXPORT_SUBTREE   = "nil"
-    ORG_EXPORT_VISIBLE   = "nil"
-    ORG_EXPORT_BODY_ONLY = "t"
-    ORG_EXPORT_ELISP     = <<END
-(progn
-  (setq org-html-htmlize-output-type 'css)
-  (org-mode)
-  (message (concat "Org version: " org-version))
-  (cd "<%= export_dir %>")
-  (org-html-export-to-html
-    <%= ORG_EXPORT_ASYNC %> <%= ORG_EXPORT_SUBTREE %>
-    <%= ORG_EXPORT_VISIBLE %> <%= ORG_EXPORT_BODY_ONLY %>
-    (quote (<%= orgmode_export_plist %>)))
-  (kill-emacs))
-END
-
     fattr :verbose     => true
     fattr :metadata    => true
     fattr(:authors) {
@@ -75,10 +52,13 @@ END
     fattr :language    => ENV["LANG"].to_s.split(".").first
     fattr(:date) {        Time.now.iso8601 }
     fattr :git         => true
-    fattr(:emacs_load_path) {
-      FileList[orgmode_lisp_dir]
-    }
     fattr(:stylesheets) { [code_stylesheet] }
+    fattr(:extensions_to_source_formats) {
+      {
+        "md"       => "markdown",
+        "markdown" => "markdown",
+      }
+    }
 
     def initialize
       yield self if block_given?
@@ -109,12 +89,12 @@ END
     end
 
     def source_exts
-      EXTENSIONS_TO_SOURCE_FORMATS.keys
+      extensions_to_source_formats.keys
     end
 
     def format_of_source_file(source_file)
       ext = source_file.pathmap("%x")[1..-1]
-      EXTENSIONS_TO_SOURCE_FORMATS.fetch(ext)
+      extensions_to_source_formats.fetch(ext)
     end
 
     def source_files
@@ -160,17 +140,6 @@ END
       sh *%W[pandoc --no-highlight -w html5 -o #{export_file} #{source_file}]
     end
 
-    def export_from_orgmode(export_file, source_file)
-      language = language
-      elisp = ERB.new(ORG_EXPORT_ELISP).result(binding)
-      sh "emacs", *emacs_flags, *%W[--file #{source_file} --eval #{elisp}]
-    end
-
-    def emacs_flags
-      emacs_load_path_flags = emacs_load_path.pathmap("--directory=%p")
-      ["--batch", *emacs_load_path_flags]
-    end
-
     def section_dir
       "build/sections"
     end
@@ -211,30 +180,6 @@ END
       open(section_file, "w") do |f|
         format_xml(f) do |pipe_input|
           normal_doc.write_xml_to(pipe_input)
-        end
-      end
-    end
-
-    def normalize_orgmode_export(export_file, section_file)
-      normalize_generic_export(export_file, section_file) do |normal_doc|
-        listing_pre_elts = normal_doc.css("div.org-src-container > pre.src")
-        listing_pre_elts.each do |elt|
-          language = elt["class"].split.grep(/^src-(.*)$/) do
-            break $1
-          end
-          elt.parent.replace(normal_doc.create_element("pre") do |pre_elt|
-              pre_elt["class"] = "sourceCode #{language}"
-              pre_elt.add_child(normal_doc.create_element("code", elt.text))
-            end)
-        end
-        figure_elts = normal_doc.css("div.figure")
-        figure_elts.each do |elt|
-          img_elt = elt.css("img")
-          caption = elt.at_css("p:nth-child(2)").content
-          elt.replace(normal_doc.create_element("figure") do |fig_elt|
-              fig_elt.add_child(img_elt)
-              fig_elt.add_child(normal_doc.create_element("figcaption", caption))
-            end)
         end
       end
     end
@@ -441,30 +386,6 @@ END
         "-Vdate=#{date}",
         "-Vlang=#{language}"
       ]
-    end
-
-    def orgmode_version
-      "8.0.7"
-    end
-
-    def orgmode_lisp_dir
-      "#{vendor_orgmode_dir}/lisp"
-    end
-
-    def orgmode_export_plist
-      %W[
-      :with-toc             nil
-      :headline-levels      6
-      :section-numbers      nil
-      :language             #{language}
-      :htmlized-source      nil
-      :html-postamble       nil
-      :with-sub-superscript nil
-    ].join(" ")
-    end
-
-    def vendor_orgmode_dir
-      "#{vendor_dir}/org-#{orgmode_version}"
     end
 
     def vendor_dir

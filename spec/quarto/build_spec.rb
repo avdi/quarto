@@ -12,7 +12,6 @@ module Quarto
         @construct.file "Rakefile"
         @construct.directory "subdir" do |d|
           d.file "ch2.markdown"
-          d.file "ch3.org"
           d.file "README.txt"
         end
         @construct.directory "build" do |d|
@@ -36,8 +35,7 @@ module Quarto
       Then {
         build.source_files.should == [
           "ch1.md",
-          "subdir/ch2.markdown",
-          "subdir/ch3.org"
+          "subdir/ch2.markdown"
         ]
       }
 
@@ -45,7 +43,6 @@ module Quarto
         build.export_files.should == [
           "build/exports/ch1.html",
           "build/exports/subdir/ch2.html",
-          "build/exports/subdir/ch3.html",
         ]
       }
 
@@ -53,16 +50,11 @@ module Quarto
         build.section_files.should == [
           "build/sections/ch1.xhtml",
           "build/sections/subdir/ch2.xhtml",
-          "build/sections/subdir/ch3.xhtml",
         ]
       }
 
       And {
         build.source_for_export_file("build/exports/ch1.html") == "ch1.md"
-      }
-
-      And {
-        build.source_for_export_file("build/exports/subdir/ch3.org") == "subdir/ch3.org"
       }
 
       And {
@@ -74,28 +66,24 @@ module Quarto
         Given {
           build.source_files = [
             "ch1.md",
-            "subdir/ch3.org"
           ]
         }
 
         Then {
           build.source_files.should == [
             "ch1.md",
-            "subdir/ch3.org"
           ]
         }
 
         And {
           build.export_files.should == [
             "build/exports/ch1.html",
-            "build/exports/subdir/ch3.html",
           ]
         }
 
         And {
           build.section_files.should == [
             "build/sections/ch1.xhtml",
-            "build/sections/subdir/ch3.xhtml",
           ]
         }
       end
@@ -105,10 +93,6 @@ module Quarto
       it 'recognizes .md and .markdown as Markdown' do
         expect(build.format_of_source_file("foo.md")).to eq("markdown")
         expect(build.format_of_source_file("foo.markdown")).to eq("markdown")
-      end
-
-      it 'recognizes .org as OrgMode' do
-        expect(build.format_of_source_file("foo.org")).to eq("orgmode")
       end
     end
 

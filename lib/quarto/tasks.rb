@@ -102,26 +102,5 @@ module Quarto
     touch t.name
   end
 
-  namespace :orgmode do
-    task :vendor => vendor_orgmode_dir
-  end
-
-  directory vendor_orgmode_dir =>
-    "#{vendor_dir}/org-#{orgmode_version}.tar.gz" do |t|
-
-    cd vendor_dir do
-      sh "tar -xzf org-#{orgmode_version}.tar.gz"
-    end
-    cd vendor_orgmode_dir do
-      sh "make"
-    end
-  end
-
-  file "#{vendor_dir}/org-#{orgmode_version}.tar.gz" => vendor_dir do |t|
-    cd vendor_dir do
-      sh "wget http://orgmode.org/org-#{orgmode_version}.tar.gz"
-    end
-  end
-
   directory vendor_dir
 end
