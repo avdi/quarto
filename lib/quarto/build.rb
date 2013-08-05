@@ -65,6 +65,7 @@ module Quarto
   (kill-emacs))
 END
 
+    fattr :verbose     => true
     fattr :metadata    => true
     fattr(:authors) {
       [Etc.getpwnam(Etc.getlogin).gecos.split(',')[0]]
@@ -78,6 +79,10 @@ END
       FileList[orgmode_lisp_dir]
     }
     fattr(:stylesheets) { [code_stylesheet] }
+
+    def initialize
+      yield self if block_given?
+    end
 
     def config_file
       ".quarto.conf"
@@ -188,7 +193,7 @@ END
     end
 
     def normalize_generic_export(export_file, section_file)
-      puts "normalize #{export_file} to #{section_file}"
+      say("normalize #{export_file} to #{section_file}")
       doc = open(export_file) do |f|
         Nokogiri::HTML(f)
       end
@@ -251,7 +256,7 @@ END
         stylesheets: stylesheets,
         metadata:    metadata
       }.merge(options)
-      puts "create #{spine_file}"
+      say("create #{spine_file}")
       doc = Nokogiri::XML.parse(SPINE_TEMPLATE)
       doc.root.at_css("title").content = title
       add_metadata_to_doc(doc) if options[:metadata]
@@ -323,7 +328,7 @@ END
     end
 
     def create_skeleton_file(skeleton_file, codex_file)
-      puts "scan #{codex_file} for source code listings"
+      say("scan #{codex_file} for source code listings")
       skel_doc = open(codex_file) do |f|
         Nokogiri::XML(f)
       end
@@ -333,7 +338,7 @@ END
         code     = pre_elt.at_css("code").text
         digest   = Digest::SHA1.hexdigest(code)
         listing_path = "#{listings_dir}/#{digest}.#{ext}"
-        puts "extract listing #{i} to #{listing_path}"
+        say("extract listing #{i} to #{listing_path}")
         open(listing_path, 'w') do |f|
           f.write(strip_listing(code))
         end
@@ -347,7 +352,7 @@ END
         end
         pre_elt.replace(inc_elt)
       end
-      puts "create #{skeleton_file}"
+      say("create #{skeleton_file}")
       open(skeleton_file, "w") do |f|
         format_xml(f) do |format_input|
           skel_doc.write_xml_to(format_input)
@@ -473,7 +478,7 @@ END
     private
 
     def format_xml(output_io)
-      Open3.popen2(*%W[xmllint --format --xmlout -]) do
+      Open3.popen2(*xmllint_command(*%W[--format --xmlout -])) do
         |stdin, stdout, wait_thr|
         yield(stdin)
         stdin.close
@@ -483,27 +488,36 @@ END
 
     def expand_xinclude(output_file, input_file, options={})
       options = {format: true}.merge(options)
-      puts "expand #{input_file} to #{output_file}"
+      say("expand #{input_file} to #{output_file}")
       cleanup_args = %W[--nsclean --xmlout --nofixup-base-uris]
       if options[:format]
         cleanup_args << "--format"
       end
       Open3.pipeline_r(
-        %W[xmllint --nofixup-base-uris --xinclude --xmlout #{input_file}],
+        xmllint_command(*%W[--nofixup-base-uris --xinclude --xmlout #{input_file}]),
         # In order to clean up extraneous namespace declarations we need a second
         # xmllint process
-        ["xmllint",  *cleanup_args, "-"]) do |output, wait_thr|
-        # doc = Nokogiri::XML(output)
-        # doc.xpath("//xhtml:body//*[@xml:base]", "xhtml" => XHTML_NS).each do |elt|
-        #   puts "!!! Removing xml:base #{elt['xml:base']}"
-        #   elt.remove_attribute("xml:base")
-        #   elt.base = nil
-        # end
-
+        xmllint_command(*cleanup_args, "-")) do |output, wait_thr|
         open(output_file, 'w') do |f|
           IO.copy_stream(output, f)
         end
       end
+    end
+
+    def say(*messages)
+      $stderr.puts(*messages) if verbose
+    end
+
+    def xmlflags
+      if verbose
+        []
+      else
+        ["--nowarning"]
+      end
+    end
+
+    def xmllint_command(*args)
+      ["xmllint", *xmlflags, *args]
     end
   end
 end

@@ -69,7 +69,6 @@ END
   }
 
   And {
-    puts `ls -la build/master/images`
     expect(contents("build/master/images/image1.png")).to eq("IMAGE1")
   }
 end

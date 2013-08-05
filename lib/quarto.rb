@@ -3,7 +3,14 @@ require "quarto/build"
 
 module Quarto
   def self.build
-     @build ||= Build.new
+    verbosity = if Object.const_defined?(:Rake)
+                  Rake::FileUtilsExt.verbose
+                else
+                  true
+                end
+    @build ||= Build.new do |b|
+      b.verbose = true
+    end
   end
 
   def self.method_missing(method_name, *args, &block)
@@ -19,6 +26,6 @@ module Quarto
   end
 
   def self.reset
-    @build = Build.new
+    @build = nil
   end
 end

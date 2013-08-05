@@ -3,11 +3,11 @@ require 'quarto/build'
 
 module Quarto
   describe Build do
-    Given(:build) { Quarto::Build.new }
+    Given(:build) { Quarto::Build.new do |b| b.verbose = false end }
 
     describe 'figuring out sources, exports, and section paths' do
       Given {
-        system("git init")
+        system("git init > /dev/null 2>&1")
         @construct.file "ch1.md"
         @construct.file "Rakefile"
         @construct.directory "subdir" do |d|
