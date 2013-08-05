@@ -6,9 +6,59 @@ require 'digest/sha1'
 require 'etc'
 require 'fattr'
 require 'time'
+require 'erb'
 
 module Quarto
   include Rake::DSL
+
+  XINCLUDE_NS = "http://www.w3.org/2001/XInclude"
+  XHTML_NS    = "http://www.w3.org/1999/xhtml"
+
+  EXTENSIONS_TO_SOURCE_FORMATS = {
+    "md"       => "markdown",
+    "markdown" => "markdown",
+    "org"      => "orgmode"
+  }
+
+  SECTION_TEMPLATE = <<-EOF
+  <!DOCTYPE html>
+  <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+      <title></title>
+    </head>
+    <body>
+    </body>
+  </html>
+  EOF
+
+  SPINE_TEMPLATE = <<-EOF
+  <!DOCTYPE html>
+  <html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+      <title>Untitled Book</title>
+      <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"/>
+    </head>
+    <body>
+    </body>
+  </html>
+  EOF
+
+  ORG_EXPORT_ASYNC     = "nil"
+  ORG_EXPORT_SUBTREE   = "nil"
+  ORG_EXPORT_VISIBLE   = "nil"
+  ORG_EXPORT_BODY_ONLY = "t"
+  ORG_EXPORT_ELISP     = <<END
+(progn
+  (setq org-html-htmlize-output-type 'css)
+  (org-mode)
+  (message (concat "Org version: " org-version))
+  (cd "<%= export_dir %>")
+  (org-html-export-to-html
+    <%= ORG_EXPORT_ASYNC %> <%= ORG_EXPORT_SUBTREE %>
+    <%= ORG_EXPORT_VISIBLE %> <%= ORG_EXPORT_BODY_ONLY %>
+    (quote (<%= orgmode_export_plist %>)))
+  (kill-emacs))
+END
 
   Fattr :metadata    => true
   Fattr(:authors) {
@@ -19,6 +69,9 @@ module Quarto
   Fattr :language    => ENV["LANG"].to_s.split(".").first
   Fattr(:date) {        Time.now.iso8601 }
   Fattr :git         => true
+  Fattr(:emacs_load_path) {
+    FileList[orgmode_lisp_dir]
+  }
 
   def self.configure
     yield self
@@ -63,36 +116,6 @@ module Quarto
 
   module_function
 
-  XINCLUDE_NS = "http://www.w3.org/2001/XInclude"
-
-  EXTENSIONS_TO_SOURCE_FORMATS = {
-    "md" => "markdown",
-    "markdown" => "markdown",
-    "org" => "orgmode"
-  }
-
-  SECTION_TEMPLATE = <<-EOF
-  <!DOCTYPE html>
-  <html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-      <title></title>
-    </head>
-    <body>
-    </body>
-  </html>
-  EOF
-
-  SPINE_TEMPLATE = <<-EOF
-  <!DOCTYPE html>
-  <html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-      <title>Untitled Book</title>
-      <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"/>
-    </head>
-    <body>
-    </body>
-  </html>
-  EOF
 
   def build_dir
     "build"
@@ -132,7 +155,6 @@ module Quarto
   end
 
   def export_files
-    p source_files
     source_files.pathmap("#{export_dir}/%p").ext('.html')
   end
 
@@ -142,8 +164,24 @@ module Quarto
     FileList[pattern].first
   end
 
-  def export_command_for(source_file, export_file)
-    %W[pandoc --no-highlight -w html5 -o #{export_file} #{source_file}]
+  def export(export_file, source_file)
+    format = format_of_source_file(source_file)
+    send("export_from_#{format}", export_file, source_file)
+  end
+
+  def export_from_markdown(export_file, source_file)
+    sh *%W[pandoc --no-highlight -w html5 -o #{export_file} #{source_file}]
+  end
+
+  def export_from_orgmode(export_file, source_file)
+    language = configuration.language
+    elisp = ERB.new(ORG_EXPORT_ELISP).result(binding)
+    sh "emacs", *emacs_flags, *%W[--file #{source_file} --eval #{elisp}]
+  end
+
+  def emacs_flags
+    emacs_load_path_flags = configuration.emacs_load_path.pathmap("--directory=%p")
+    ["--batch", *emacs_load_path_flags]
   end
 
   def section_dir
@@ -164,6 +202,10 @@ module Quarto
   end
 
   def normalize_markdown_export(export_file, section_file)
+    normalize_generic_export(export_file, section_file)
+  end
+
+  def normalize_generic_export(export_file, section_file)
     puts "normalize #{export_file} to #{section_file}"
     doc = open(export_file) do |f|
       Nokogiri::HTML(f)
@@ -178,9 +220,25 @@ module Quarto
         normal_doc.create_comment("No content for #{export_file}"))
     end
     normal_doc.at_css("title").content = export_file.pathmap("%n")
+    yield(normal_doc) if block_given?
     open(section_file, "w") do |f|
       format_xml(f) do |pipe_input|
         normal_doc.write_xml_to(pipe_input)
+      end
+    end
+  end
+
+  def normalize_orgmode_export(export_file, section_file)
+    normalize_generic_export(export_file, section_file) do |normal_doc|
+      listing_pre_elts = normal_doc.css("div.org-src-container > pre.src")
+      listing_pre_elts.each do |elt|
+        language = elt["class"].split.grep(/^src-(.*)$/) do
+          break $1
+        end
+        elt.parent.replace(normal_doc.create_element("pre") do |pre_elt|
+            pre_elt["class"] = "sourceCode #{language}"
+            pre_elt.add_child(normal_doc.create_element("code", elt.text))
+          end)
       end
     end
   end
@@ -239,7 +297,7 @@ module Quarto
     add_metadata_element(doc, head_elt, "author", configuration.authors.join(", "))
     add_metadata_element(doc, head_elt, "date", configuration.date)
     add_metadata_element(doc, head_elt, "subject", configuration.description)
-    add_metadata_element(doc, head_elt, "generator", "Quarto")
+    add_metadata_element(doc, head_elt, "generator", "Quarto #{Quarto::VERSION}")
     add_metadata_element(doc, head_elt, "DC.title", configuration.title)
     add_metadata_element(doc, head_elt, "DC.creator", configuration.authors)
     add_metadata_element(
@@ -329,7 +387,7 @@ module Quarto
     first_code_line = lines.index{|l| l =~ /\S/}
     last_code_line  = lines.rindex{|l| l =~ /\S/}
     lines = lines[first_code_line..last_code_line]
-    indent = lines.map{|l| l.index(/[^ ]/)}.min
+    indent = lines.map{|l| l.index(/[^ ]/) || 0}.min
     lines.map{|l| l.slice(indent..-1)}.join("\n") + "\n"
   end
 
@@ -366,6 +424,38 @@ module Quarto
     ]
   end
 
+  def orgmode_version
+    "8.0.7"
+  end
+
+  def orgmode_lisp_dir
+    "#{vendor_orgmode_dir}/lisp"
+  end
+
+  def orgmode_export_plist
+    %W[
+      :with-toc             nil
+      :headline-levels      6
+      :section-numbers      nil
+      :language             #{configuration.language}
+      :htmlized-source      nil
+      :html-postamble       nil
+      :with-sub-superscript nil
+    ].join(" ")
+  end
+
+  def vendor_orgmode_dir
+    "#{vendor_dir}/org-#{orgmode_version}"
+  end
+
+  def vendor_dir
+    "#{quarto_dir}/vendor"
+  end
+
+  def quarto_dir
+    ".quarto"
+  end
+
   private
 
   def format_xml(output_io)
@@ -380,15 +470,22 @@ module Quarto
   def expand_xinclude(output_file, input_file, options={})
     options = {format: true}.merge(options)
     puts "expand #{input_file} to #{output_file}"
-    cleanup_args = %W[--nsclean --xmlout]
+    cleanup_args = %W[--nsclean --xmlout --nofixup-base-uris]
     if options[:format]
       cleanup_args << "--format"
     end
     Open3.pipeline_r(
-      %W[xmllint --xinclude --xmlout #{input_file}],
+      %W[xmllint --nofixup-base-uris --xinclude --xmlout #{input_file}],
       # In order to clean up extraneous namespace declarations we need a second
       # xmllint process
       ["xmllint",  *cleanup_args, "-"]) do |output, wait_thr|
+      # doc = Nokogiri::XML(output)
+      # doc.xpath("//xhtml:body//*[@xml:base]", "xhtml" => XHTML_NS).each do |elt|
+      #   puts "!!! Removing xml:base #{elt['xml:base']}"
+      #   elt.remove_attribute("xml:base")
+      #   elt.base = nil
+      # end
+
       open(output_file, 'w') do |f|
         IO.copy_stream(output, f)
       end

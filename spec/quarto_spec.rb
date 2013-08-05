@@ -25,8 +25,6 @@ describe Quarto do
       end
       @construct.file "~foo.md"
       @construct.file "ignored_by_config.md"
-      p `git ls-files --others`
-      p File.read(".gitignore")
     }
 
     Given {
@@ -107,14 +105,6 @@ describe Quarto do
     after do
       Quarto.reset
     end
-  end
-
-  describe 'export commands' do
-    Given(:command) {
-      export_command_for("ch1.md", "ch1.html")
-    }
-
-    Then { command == %W[pandoc --no-highlight -w html5 -o ch1.html ch1.md] }
   end
 
   describe 'source formats' do

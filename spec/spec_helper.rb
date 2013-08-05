@@ -1,4 +1,5 @@
 $LOAD_PATH.unshift(File.expand_path('../../lib', __FILE__))
+require_relative "env"
 
 begin
   # use `bundle install --standalone' to get this...

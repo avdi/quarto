@@ -40,15 +40,15 @@ END
     <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"/>
   </head>
   <body>
-    <p xml:base="build/sections/ch1.xhtml">
+    <p>
 Before listing 0
 </p>
-    <div class="highlight" xml:base="build/highlights/3361c5f02e08bd44bde2d42633a2c9be201f7ec4.html"><pre><span class="nb">puts</span> <span class="s2">"hello, world"</span>
+    <div class="highlight"><pre><span class="nb">puts</span> <span class="s2">"hello, world"</span>
 </pre></div>
-    <p xml:base="build/sections/ch1.xhtml">
+    <p>
 After listing 0
 </p>
-    <div class="highlight" xml:base="build/highlights/e7b17ea0eeebbd00d08674cf9070d287e24dc68e.html"><pre><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+    <div class="highlight"><pre><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">printf</span><span class="p">(</span><span class="s">"Hello, world</span>
 <span class="s">")</span>
 <span class="p">}</span>

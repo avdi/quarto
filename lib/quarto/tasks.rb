@@ -2,7 +2,7 @@ require 'quarto'
 
 include Quarto
 
-load ".quarto" if File.readable?(".quarto")
+load ".quarto.conf" if File.readable?(".quarto.conf")
 
 task :default => :deliverables
 
@@ -40,7 +40,7 @@ export_files.each do |export_file|
   file export_file => [export_dir, source_for_export_file(export_file)] do |t|
     source_file = source_for_export_file(export_file)
     mkdir_p export_file.pathmap("%d")
-    sh *export_command_for(source_file, export_file)
+    export(export_file, source_file)
   end
 end
 
@@ -92,3 +92,28 @@ file latex_file => [master_file] do |t|
   mkdir_p t.name.pathmap("%d")
   sh "pandoc", *pandoc_vars, *%W[--standalone -o #{t.name} #{master_file}]
 end
+
+directory vendor_dir
+
+namespace :orgmode do
+  task :vendor => vendor_orgmode_dir
+end
+
+directory vendor_orgmode_dir =>
+  "#{vendor_dir}/org-#{orgmode_version}.tar.gz" do |t|
+
+  cd vendor_dir do
+    sh "tar -xzf org-#{orgmode_version}.tar.gz"
+  end
+  cd vendor_orgmode_dir do
+    sh "make"
+  end
+end
+
+file "#{vendor_dir}/org-#{orgmode_version}.tar.gz" => vendor_dir do |t|
+  cd vendor_dir do
+    sh "wget http://orgmode.org/org-#{orgmode_version}.tar.gz"
+  end
+end
+
+directory vendor_dir
