@@ -1,5 +1,6 @@
 require "quarto/version"
 require "quarto/build"
+require "quarto/plugin"
 
 module Quarto
   def self.build
@@ -37,6 +38,6 @@ module Quarto
   end
 
   def self.reset
-    @build = nil
+    @build         = nil
   end
 end

@@ -3,7 +3,12 @@ require 'quarto/build'
 
 module Quarto
   describe Build do
-    Given(:build) { Quarto::Build.new do |b| b.verbose = false end }
+    Given(:build) {
+      Quarto::Build.new do |b|
+        b.use :markdown
+        b.verbose = false
+      end
+    }
 
     describe 'figuring out sources, exports, and section paths' do
       Given {

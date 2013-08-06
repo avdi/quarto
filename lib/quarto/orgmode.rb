@@ -1,9 +1,8 @@
+require 'quarto'
 require 'forwardable'
 
 module Quarto
-  class Orgmode
-    include Rake::DSL
-
+  class Orgmode < Plugin
     ORG_EXPORT_ASYNC     = "nil"
     ORG_EXPORT_SUBTREE   = "nil"
     ORG_EXPORT_VISIBLE   = "nil"
@@ -34,12 +33,6 @@ END
     fattr(:emacs_load_path) {
       FileList[orgmode_lisp_dir]
     }
-
-    attr_reader :main
-
-    def initialize(main)
-      @main = main
-    end
 
     def enhance_build(build)
       build.extend(Quarto::Orgmode::BuildExt)

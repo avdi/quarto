@@ -53,12 +53,7 @@ module Quarto
     fattr(:date) {        Time.now.iso8601 }
     fattr :git         => true
     fattr(:stylesheets) { [code_stylesheet] }
-    fattr(:extensions_to_source_formats) {
-      {
-        "md"       => "markdown",
-        "markdown" => "markdown",
-      }
-    }
+    fattr(:extensions_to_source_formats) { {} }
     fattr(:plugins) { {} }
 
     def initialize
@@ -147,10 +142,6 @@ module Quarto
       send("export_from_#{format}", export_file, source_file)
     end
 
-    def export_from_markdown(export_file, source_file)
-      sh *%W[pandoc --no-highlight -w html5 -o #{export_file} #{source_file}]
-    end
-
     def section_dir
       "build/sections"
     end
@@ -166,10 +157,6 @@ module Quarto
     def normalize_export(export_file, section_file, format)
       format ||= "NO_FORMAT_GIVEN"
       send("normalize_#{format}_export", export_file, section_file)
-    end
-
-    def normalize_markdown_export(export_file, section_file)
-      normalize_generic_export(export_file, section_file)
     end
 
     def normalize_generic_export(export_file, section_file)
