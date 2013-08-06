@@ -56,10 +56,11 @@ puts 1 + 1
 
 EOF
 
-      @construct.file ".quarto.conf", <<EOF
-require 'quarto/orgmode'
+      @construct.file "Rakefile", <<EOF
+require 'quarto'
 
 Quarto.configure do |config|
+  config.use :orgmode
   config.orgmode.emacs_load_path << "#{VENDOR_ORG_MODE_DIR}"
 end
 EOF

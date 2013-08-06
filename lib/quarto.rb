@@ -8,35 +8,17 @@ module Quarto
                 else
                   true
                 end
-    @build ||= new_enhanced_build(verbose: verbosity)
+    @build ||= new_build(verbose: verbosity)
   end
 
-  def self.new_enhanced_build(options={})
+  def self.new_build(options={})
     Build.new do |b|
       b.verbose = options[:verbose]
-      init_callbacks.each do |callback|
-        callback.call(b)
-      end
     end
   end
 
   def self.method_missing(method_name, *args, &block)
     build.public_send(method_name, *args, &block)
-  end
-
-  def self.define_tasks(&block)
-    module_eval(&block)
-  end
-
-  def self.init_callbacks
-    @init_callbacks ||= []
-  end
-
-  def self.enhance_build(&block)
-    init_callbacks << block
-    if @build
-      block.call(build)
-    end
   end
 
   def build
@@ -45,6 +27,13 @@ module Quarto
 
   def self.configure
     yield build
+    build.define_tasks
+  end
+
+  def self.reconfigure(&block)
+    Rake.application.clear
+    reset
+    configure(&block)
   end
 
   def self.reset
