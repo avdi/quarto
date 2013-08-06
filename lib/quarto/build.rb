@@ -51,7 +51,6 @@ module Quarto
     fattr :description => ""
     fattr :language    => ENV["LANG"].to_s.split(".").first
     fattr(:date) {        Time.now.iso8601 }
-    fattr :git         => true
     fattr(:stylesheets) { [code_stylesheet] }
     fattr(:extensions_to_source_formats) { {} }
     fattr(:plugins) { {} }
@@ -75,11 +74,11 @@ module Quarto
     end
 
     def source_exclusions
-      @source_exclusions ||= ["#{build_dir}/*", ".git/*"]
+      @source_exclusions ||= ["#{build_dir}/**/*"]
     end
 
-    def exclude_source(exclude_glob)
-      source_exclusions << exclude_glob
+    def exclude_sources(*exclusion_patterns)
+      source_files.exclude(*exclusion_patterns)
     end
 
     def source_files=(new_source_files)
@@ -105,21 +104,7 @@ module Quarto
 
     def source_files
       @source_files ||= FileList.new("**/*.{#{source_exts.join(',')}}") do |files|
-        source_exclusions.each do |exclusion|
-          files.exclude(exclusion)
-          files.exclude do |file|
-            next false unless git?
-            # First check that this is a git repo
-            next false unless system("git status -s > /dev/null 2>&1")
-            # See if it is a registered file with git
-            ls_git = `git ls-files #{file}`
-            # See if it is an unregistered but un-ignored file
-            ls_other =
-              `git ls-files --others --exclude-per-directory .gitignore #{file}`
-            # If it shows up in neither of the above, exclude it
-            ls_git.empty? && ls_other.empty?
-          end
-        end
+        files.exclude(*source_exclusions)
       end
     end
 
@@ -327,7 +312,7 @@ module Quarto
       last_code_line  = lines.rindex{|l| l =~ /\S/}
       lines = lines[first_code_line..last_code_line]
       indent = lines.map{|l| l.index(/[^ ]/) || 0}.min
-      lines.map{|l| l.slice(indent..-1)}.join("\n") + "\n"
+      lines.map{|l| l[indent..-1]}.join("\n") + "\n"
     end
 
     def master_file

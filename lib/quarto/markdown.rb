@@ -20,6 +20,8 @@ module Quarto
       build.markdown = self
       build.extensions_to_source_formats["md"] = "markdown"
       build.extensions_to_source_formats["markdown"] = "markdown"
+      build.source_files.include("**/*.md")
+      build.source_files.include("**/*.markdown")
     end
 
     def export_from_markdown(export_file, source_file)

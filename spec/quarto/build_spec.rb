@@ -5,6 +5,7 @@ module Quarto
   describe Build do
     Given(:build) {
       Quarto::Build.new do |b|
+        b.use :git
         b.use :markdown
         b.verbose = false
       end
@@ -34,7 +35,7 @@ module Quarto
       }
 
       Given {
-        build.exclude_source("ignored*")
+        build.exclude_sources("ignored*")
       }
 
       Then {

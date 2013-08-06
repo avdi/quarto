@@ -38,6 +38,7 @@ END
       build.extend(Quarto::Orgmode::BuildExt)
       build.orgmode = Quarto::Orgmode.new(build)
       build.extensions_to_source_formats["org"] = "orgmode"
+      build.source_files.include("**/*.org")
     end
 
     def define_tasks
