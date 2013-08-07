@@ -121,6 +121,47 @@ END
               fig_elt.add_child(normal_doc.create_element("figcaption", caption))
             end)
         end
+        normalize_document_structure(normal_doc)
+        promote_headings(normal_doc)
+      end
+    end
+
+    def normalize_document_structure(doc)
+      chapter_elts = doc.css("div.outline-2")
+      chapter_elts.each do |elt|
+        elt.name = "section"
+        elt["class"] = "chapter"
+      end
+      section_elts = doc.css("div.outline-3")
+      section_elts.each do |elt|
+        elt.name = "section"
+        elt["class"] = "section"
+      end
+      subsection_elts = doc.css("div.outline-4")
+      subsection_elts.each do |elt|
+        elt.name = "subsection"
+        elt["class"] = "subsection"
+      end
+      subsubsection_elts = doc.css("div.outline-5")
+      subsubsection_elts.each do |elt|
+        elt.name = "subsubsection"
+        elt["class"] = "subsubsection"
+      end
+    end
+
+    def promote_headings(doc)
+      promotions = {
+        "h2" => "h1",
+        "h3" => "h2",
+        "h4" => "h3",
+        "h5" => "h4",
+        "h6" => "h5",
+      }
+
+      promotions.keys.each do |h_tag|
+        doc.css("section.chapter #{h_tag}").each do |heading|
+          heading.name = promotions[heading.name]
+        end
       end
     end
   end

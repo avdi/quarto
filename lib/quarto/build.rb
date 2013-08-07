@@ -42,18 +42,27 @@ module Quarto
   </html>
   EOF
 
-    fattr :verbose     => true
-    fattr :metadata    => true
+    fattr :verbose              => true
+    fattr :metadata             => true
     fattr(:authors) {
       [Etc.getpwnam(Etc.getlogin).gecos.split(',')[0]]
     }
-    fattr :title       => "Untitled Book"
-    fattr :description => ""
-    fattr :language    => ENV["LANG"].to_s.split(".").first
-    fattr(:date) {        Time.now.iso8601 }
-    fattr(:stylesheets) { [code_stylesheet] }
+    fattr :title                => "Untitled Book"
+    fattr :description          => ""
+    fattr :language             => ENV["LANG"].to_s.split(".").first
+    fattr(:date)                { Time.now.iso8601 }
+    fattr(:stylesheets)         { [base_stylesheet, code_stylesheet] }
     fattr(:extensions_to_source_formats) { {} }
-    fattr(:plugins) { {} }
+    fattr(:plugins)             { {} }
+    fattr(:deliverable_files)   { FileList[latex_file] }
+    fattr(:extra_asset_files)   { FileList[] }
+    fattr(:font)                { 'serif' }
+    fattr(:heading_font)        { '"PT Sans", sans-serif' }
+    fattr(:left_slug)           { nil }
+    fattr(:right_slug)          { nil }
+    fattr(:print_page_width)    { "7.5in" }
+    fattr(:print_page_height)   { "9in"   }
+    fattr(:cover_image)         { nil }
 
     def initialize
       yield self if block_given?
@@ -175,6 +184,18 @@ module Quarto
       "#{build_dir}/code.css"
     end
 
+    def base_stylesheet
+      "#{build_dir}/base.css"
+    end
+
+    def base_stylesheet_scss
+      "#{build_dir}/base.scss"
+    end
+
+    def base_stylesheet_template
+      File.expand_path("../../../templates/base.scss.erb", __FILE__)
+    end
+
     def spine_file
       "build/spine.xhtml"
     end
@@ -266,9 +287,13 @@ module Quarto
         code     = pre_elt.at_css("code").text
         digest   = Digest::SHA1.hexdigest(code)
         listing_path = "#{listings_dir}/#{digest}.#{ext}"
-        say("extract listing #{i} to #{listing_path}")
-        open(listing_path, 'w') do |f|
-          f.write(strip_listing(code))
+        if File.exist?(listing_path)
+          say "skip extant listing #{listing_path}"
+        else
+          say("extract listing #{i} to #{listing_path}")
+          open(listing_path, 'w') do |f|
+            f.write(strip_listing(code))
+          end
         end
         highlight_path = "#{highlights_dir}/#{digest}.html"
         inc_elt = skel_doc.create_element("xi:include") do |elt|
@@ -333,12 +358,17 @@ module Quarto
     end
 
     def copy_assets(master_file, assets_dir)
+      asset_files = []
+      asset_files.concat(extra_asset_files)
       doc = open(master_file) do |f|
         Nokogiri::XML(f)
       end
       asset_elts = doc.css("*[src]")
       asset_elts.each do |elt|
         asset_path = Pathname(elt["src"]).cleanpath
+        asset_files << asset_path
+      end
+      asset_files.each do |asset_path|
         rel_path   = asset_path.relative_path_from(Pathname("."))
         dest       = Pathname(assets_dir) + rel_path
         mkdir_p dest.dirname
@@ -348,14 +378,6 @@ module Quarto
 
     def deliverable_dir
       "#{build_dir}/deliverables"
-    end
-
-    def deliverable_files
-      [pdf_file, latex_file]
-    end
-
-    def pdf_file
-      "#{deliverable_dir}/book.pdf"
     end
 
     def latex_file
@@ -377,6 +399,11 @@ module Quarto
 
     def quarto_dir
       ".quarto"
+    end
+
+    def expand_template(template_file, output_file)
+      say "expand #{template_file} to #{output_file}"
+      File.write(output_file, ERB.new(File.read(template_file)).result(binding))
     end
 
     private
@@ -480,7 +507,15 @@ module Quarto
         sh "pygmentize -S colorful -f html > #{t.name}"
       end
 
-      file spine_file => [build_dir, code_stylesheet] do |t|
+      file base_stylesheet => base_stylesheet_scss do |t|
+        sh *%W[sass --scss #{base_stylesheet_scss} #{t.name}]
+      end
+
+      file base_stylesheet_scss => base_stylesheet_template do |t|
+        expand_template(base_stylesheet_template, base_stylesheet_scss)
+      end
+
+      file spine_file => [build_dir, *stylesheets] do |t|
         create_spine_file(t.name, section_files, stylesheets: stylesheets)
       end
 
@@ -505,11 +540,6 @@ module Quarto
         create_master_file(t.name, skeleton_file)
       end
 
-      file pdf_file => [master_file, assets_file] do |t|
-        mkdir_p t.name.pathmap("%d")
-        sh *%W[prince #{master_file} -o #{t.name}]
-      end
-
       file latex_file => [master_file, assets_file] do |t|
         mkdir_p t.name.pathmap("%d")
         sh "pandoc", *pandoc_vars, *%W[--standalone -o #{t.name} #{master_file}]
@@ -521,8 +551,6 @@ module Quarto
         copy_assets(master_file, master_dir)
         touch t.name
       end
-
-      directory vendor_dir
     end
 
     def define_plugin_tasks
