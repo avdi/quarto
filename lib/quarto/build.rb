@@ -58,6 +58,7 @@ module Quarto
     fattr(:extra_asset_files)   { FileList[] }
     fattr(:font)                { 'serif' }
     fattr(:heading_font)        { '"PT Sans", sans-serif' }
+    fattr(:heading_color)       { "black" }
     fattr(:left_slug)           { nil }
     fattr(:right_slug)          { nil }
     fattr(:print_page_width)    { "7.5in" }

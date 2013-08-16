@@ -3,11 +3,12 @@
 /* Converted to SCSS and improved by Noel Rappin                   */
 /* You may reuse this style sheet for any purpose without any fees */
 
-$font:         "<%= font %>";
-$header_font:  "<%= heading_font %>";
-$title:        "<%= title %>";
-$lslug:        "<%= left_slug %>";
-$rslug:        "<%= right_slug %>";
+$font:          <%= font %>;
+$heading_font:  <%= heading_font %>;
+$heading_color: <%= heading_color %>;
+$title:         "<%= title %>";
+$lslug:         "<%= left_slug %>";
+$rslug:         "<%= right_slug %>";
 
 @media print {
   html {
@@ -24,11 +25,11 @@ $rslug:        "<%= right_slug %>";
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: $header_font;
+    font-family: $heading_font;
     margin: 2em 0 0.5em 0;
     font-weight: bold;
     page-break-after: avoid;
-    color: #004372;
+    color: $heading_color;
   }
 
   h1 {
@@ -43,6 +44,7 @@ $rslug:        "<%= right_slug %>";
   }
 
   h2 {
+    page-break-before: always;
     font-size: 2em;
     margin-left: 25px;
     margin-right: 25px;
@@ -61,10 +63,10 @@ $rslug:        "<%= right_slug %>";
   }
 
   .sidebar-title {
-    font-family: $header_font;
+    font-family: $heading_font;
     font-weight: bold;
     text-align: center;
-    color: #004372;
+    color: $heading_color;
     margin: 0.5em 0 0em 0;
     font-size: 1.5em;
     font-weight: bold;
@@ -98,7 +100,7 @@ $rslug:        "<%= right_slug %>";
 
   pre {  margin: 1em 1.3em; }
 
-  a { text-decoration: underline; color: red }
+  a { text-decoration: none; }
 
   /* cross-references */
 
@@ -115,7 +117,7 @@ $rslug:        "<%= right_slug %>";
       font-family: "PT Sans", sans-serif;
       font-weight: bold;
       display: block;
-      color: #004372;
+      color: $heading_color;
       &::before {
         content: " Figure " counter(figure) ": ";
       }
@@ -139,7 +141,7 @@ $rslug:        "<%= right_slug %>";
   }
 
   .code-filename {
-    color: #004372;
+    color: $heading_color;
     font-family: "PT Sans", sans-serif;
     font-weight: bold;
 
@@ -151,7 +153,7 @@ $rslug:        "<%= right_slug %>";
   .code-caption {
     font-family: "PT Sans", sans-serif;
     font-weight: bold;
-    color: #004372;
+    color: $heading_color;
     text-align: center;
   }
 
@@ -599,7 +601,6 @@ will use all of them.
   h1 { string-set: header content();}
   section.chapter h1 { string-set: header "Chapter " counter(chapter) ": " content(); }
 
-  /* my addition start */
   section.chapter h2 { counter-increment: section; counter-reset: sample; }
   h2::before {
     white-space: pre;
@@ -608,14 +609,13 @@ will use all of them.
     text-align: left;
   }
  
-  /* section.chapter h2::before { */
-  /*   text-align: left; */
-  /*   margin-left: -6.5in; */
-  /*   content: "Section " counter(chapter) "." counter(section) " \A"; } */
+  section.chapter h2::before {
+    text-align: left;
+    margin-left: -6.5in;
+    content: "Section " counter(chapter) "." counter(section) " \A"; }
 
   //h2 { string-set: header content();}
   section.chapter h2 { string-set: header "Section " counter(chapter) "." counter(section) ": " content(); }
-  /* my addition end */
 
   div.frontcover h1::before, div.titlepage h1::before, div.halftitlepage h1::before {
     content: normal;                  /* that is, none */
@@ -640,10 +640,12 @@ will use all of them.
     font-size: 80%;
   }
   span.property { font-weight: bold }
-  code, pre, span.css, span.value, span.declaration {
-    color: #004372; /*600*/
-    font-size: 12pt;
+  pre, code, span.css, span.value, span.declaration {
+    color: $heading_color;
     font-family: "Source Code Pro", "Inconsolata", "Anonymous Pro", "DejaVu Sans Mono", "Lucida Console", "Lucida Sans Typewriter", monospace;
+  }
+  pre {
+    font-size: 12pt;
   }
 
   pre { page-break-inside: avoid; }

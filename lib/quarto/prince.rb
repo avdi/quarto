@@ -15,6 +15,15 @@ module Quarto
     end
 
     def define_tasks
+      task :deliverables => :pdf
+
+      desc "Build a PDF with PrinceXML"
+      task :pdf => :"prince:pdf"
+
+      namespace :prince do
+        task :pdf => pdf_file
+      end
+
       file pdf_file => [prince_master_file, main.assets_file] do |t|
         mkdir_p t.name.pathmap("%d")
         sh *%W[prince #{prince_master_file} -o #{t.name}]
