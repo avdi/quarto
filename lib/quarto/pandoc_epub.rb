@@ -11,6 +11,7 @@ module Quarto
     def enhance_build(build)
       build.extend(BuildExt)
       build.pandoc_epub = self
+      build.deliverable_files << epub_file
     end
 
     def define_tasks

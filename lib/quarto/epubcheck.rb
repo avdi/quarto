@@ -4,6 +4,8 @@ module Quarto
 
     def define_tasks
 
+      task :deliverables => :epubcheck
+
       namespace :epubcheck do
         desc "Download and prepare epubcheck"
         task :vendor => epubcheck_jar
