@@ -484,6 +484,7 @@ module Quarto
 
       directory build_dir
       directory export_dir => [build_dir]
+      directory deliverable_dir => build_dir
 
       export_files.each do |export_file|
         file export_file =>

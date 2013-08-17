@@ -1,3 +1,5 @@
+require "quarto/plugin"
+
 module Quarto
   class PandocEpub < Plugin
     module BuildExt
@@ -22,7 +24,7 @@ module Quarto
         task :epub => epub_file
       end
 
-      file epub_file => :master do |t|
+      file epub_file => [:master, main.deliverable_dir] do |t|
         create_epub_file(t.name, main.master_file)
       end
     end

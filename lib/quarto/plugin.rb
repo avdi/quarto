@@ -1,3 +1,6 @@
+require "rake"
+require "fattr"
+
 module Quarto
   class Plugin
     include Rake::DSL
