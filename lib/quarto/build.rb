@@ -63,7 +63,9 @@ module Quarto
     fattr(:right_slug)          { nil }
     fattr(:print_page_width)    { "7.5in" }
     fattr(:print_page_height)   { "9in"   }
-    fattr(:cover_image)         { nil }
+    fattr(:bitmap_cover_image)  { nil }
+    fattr(:vector_cover_image)  { nil }
+    fattr(:cover_color)         { "black" }
 
     def initialize
       yield self if block_given?
@@ -194,7 +196,7 @@ module Quarto
     end
 
     def base_stylesheet_template
-      File.expand_path("../../../templates/base.scss.erb", __FILE__)
+      File.expand_path("../../../templates/base.scss", __FILE__)
     end
 
     def spine_file
@@ -452,6 +454,39 @@ module Quarto
       ["xmllint", *xmlflags, *args]
     end
 
+    def add_scss_variables(source_file, output_file, variables)
+      open(output_file, 'w') do |out|
+        out.puts "// BEGIN AUTO VARIABLES"
+        out.puts scss_variable_assignments(variables)
+        out.puts "// END AUTO VARIABLES"
+        open(source_file) do |source|
+          IO.copy_stream(source, out)
+        end
+      end
+    end
+
+    def scss_variable_assignments(variables)
+      variables.each_with_object("") do |(name, value), s|
+        value = value.nil? ? "null" : value
+        s << "$#{name}: #{value};\n"
+      end
+    end
+
+    def stylesheet_variables
+      {
+        font: font,
+        heading_font: heading_font,
+        heading_color: heading_color,
+        title: %Q("#{title}"),
+        lslug: left_slug,
+        rslug: right_slug,
+        print_page_width: print_page_width,
+        print_page_height: print_page_height,
+        vector_cover_image: "url(#{vector_cover_image})",
+        cover_color: cover_color,
+      }
+    end
+
     def define_main_tasks
       task :default => :deliverables
 
@@ -514,7 +549,10 @@ module Quarto
       end
 
       file base_stylesheet_scss => base_stylesheet_template do |t|
-        expand_template(base_stylesheet_template, base_stylesheet_scss)
+        add_scss_variables(
+          base_stylesheet_template,
+          t.name,
+          stylesheet_variables)
       end
 
       file spine_file => [build_dir, *stylesheets] do |t|
