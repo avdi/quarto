@@ -1,5 +1,6 @@
 require "quarto/plugin"
 require "nokogiri"
+require "delegate"
 
 module Quarto
   class PandocEpub < Plugin
@@ -11,7 +12,7 @@ module Quarto
 
     fattr(:flags) { %W[-w epub3 --epub-chapter-level 2 --no-highlight --toc] }
     fattr(:xml_write_options) {
-      Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML |
+      Nokogiri::XML::Node::SaveOptions::DEFAULT_XML |
       Nokogiri::XML::Node::SaveOptions::NO_DECLARATION
     }
 
@@ -31,10 +32,12 @@ module Quarto
 
       file epub_file => [exploded_epub] do |t|
         replace_listings(exploded_epub, main.highlights_dir)
+        fix_font_mimetypes("#{exploded_epub}/content.opf")
         target = Pathname(t.name).relative_path_from(Pathname(exploded_epub))
         cd exploded_epub do
-
-          sh "zip -r #{target} *"
+          files = FileList["**/*"]
+          files.exclude("mimetype")
+          sh "zip -X -r #{target} mimetype #{files}"
         end
       end
 
@@ -49,13 +52,15 @@ module Quarto
         main.assets_file,
         main.deliverable_dir,
         stylesheet,
-        metadata_file
+        metadata_file,
+        *font_files
       ] do |t|
         create_epub_file(
           t.name,
           main.master_file,
           stylesheet: stylesheet,
-          metadata_file: metadata_file)
+          metadata_file: metadata_file,
+          font_files: font_files)
       end
 
       file stylesheet => [pandoc_epub_dir, *main.stylesheets, fonts_stylesheet] do |t|
@@ -72,11 +77,16 @@ module Quarto
         end
         open(t.name, 'w') do |f|
           master_doc.css("meta").each do |meta|
-            if meta["name"] =~ /^DC\.(.*)$/
+            if meta["name"] =~ /^DC\.(.*)$/ && meta["content"].size > 0
               f.puts "<dc:#{$1}>#{meta["content"]}</dc:#{$1}>"
             end
           end
         end
+      end
+
+      rule %r(^#{pandoc_epub_dir}/fonts/.*\.woff$) => [->(f){source_font_for(f)}] do |t|
+        mkdir_p t.name.pathmap("%d") unless File.exist?(t.name.pathmap("%d"))
+        convert_font(t.source, t.name)
       end
 
       directory pandoc_epub_dir
@@ -86,6 +96,7 @@ module Quarto
 
     def create_epub_file(epub_file, master_file, options={})
       metadata_file = options.fetch(:metadata_file) { self.metadata_file }
+      font_files    = options.fetch(:font_files)    { [] }
       pandoc_flags = flags.dup
       master_dir = master_file.pathmap("%d")
       epub_file = Pathname(epub_file)
@@ -96,8 +107,8 @@ module Quarto
           .relative_path_from(Pathname(master_dir))
         pandoc_flags.concat(%W[--epub-stylesheet #{stylesheet_file}])
       end
-      main.fonts.each do |font|
-        font_path = Pathname(font.file).relative_path_from(Pathname(master_dir))
+      font_files.each do |font_file|
+        font_path = Pathname(font_file).relative_path_from(Pathname(master_dir))
         pandoc_flags.concat(%W[--epub-embed-font #{font_path}])
       end
       metadata_path =
@@ -149,14 +160,31 @@ module Quarto
     def create_fonts_stylesheet(file=fonts_stylesheet)
       puts "generate #{file}"
       open(file, 'w') do |f|
-        main.fonts.each do |font|
+        fonts.each do |font|
           f.puts(font.to_font_face_rule)
         end
       end
     end
 
+    # Replace Pandoc mimetypes with the ones recognized by the IDPF
+    def fix_font_mimetypes(package_file)
+      doc = open(package_file) {|f|
+        Nokogiri::XML(f)
+      }
+      doc.css("manifest item[media-type='application/x-font-woff']").each do |elt|
+        elt["media-type"] = "application/font-woff"
+      end
+      doc.css("manifest item[media-type='application/x-font-opentype']").each do
+        |elt|
+        elt["media-type"] = "application/vnd.ms-opentype"
+      end
+      open(package_file, 'w') do |f|
+        doc.write_xml_to(f)
+      end
+    end
+
     def epub_file
-      "#{main.deliverable_dir}/book.epub"
+      "#{main.deliverable_dir}/#{main.name}.epub"
     end
 
     def stylesheet
@@ -185,6 +213,40 @@ module Quarto
 
     def metadata_file
       "#{pandoc_epub_dir}/metadata.xml"
+    end
+
+    def font_files
+      orig_files = FileList[*main.fonts.map(&:file)]
+      supported, unsupported = orig_files.partition{|f|
+        %W[.otf .woff].include?(f.pathmap("%x"))
+      }
+      (supported + unsupported.pathmap("#{pandoc_epub_dir}/fonts/%n.woff"))
+    end
+
+    def source_font_for(target_font)
+      orig_files = main.fonts.map(&:file)
+      orig_files.detect{|f| f.pathmap("%n") == target_font.pathmap("%n")}
+    end
+
+    def convert_font(source_font, target_font)
+      convert_script = File.expand_path("../../../fontforge/convert.pe", __FILE__)
+      sh "fontforge", "-script", convert_script, source_font, target_font
+    end
+
+    def font_file_for_epub(orig_file)
+      font_files.detect{|f| orig_file.pathmap("%n") == f.pathmap("%n")}
+    end
+
+    def fonts
+      main.fonts.map{|font|
+        if %W[.otf .woff].include?(font.file.pathmap("%x"))
+          font
+        else
+          font = font.dup
+          font.file = font_file_for_epub(font.file)
+          font
+        end
+      }
     end
   end
 end

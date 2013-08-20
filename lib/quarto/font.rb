@@ -24,7 +24,13 @@ END
     end
 
     def format
-      Pathname(file).extname[1..-1]
+      case ext = Pathname(file).extname[1..-1]
+      when "ttf" then "truetype"
+      when "otf" then "opentype"
+      when "woff" then "woff"
+      when "svg" then "svg"
+      else ext
+      end
     end
   end
 end

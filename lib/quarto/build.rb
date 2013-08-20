@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require 'rake'
 require 'nokogiri'
 require 'open3'
@@ -50,11 +51,12 @@ module Quarto
       [Etc.getpwnam(Etc.getlogin).gecos.split(',')[0]]
     }
     fattr :title                => "Untitled Book"
+    fattr(:name)                { title.downcase.tr_s("^a-z0-9", "-") }
     fattr :description          => ""
-    fattr :language             => ENV["LANG"].to_s.split(".").first
+    fattr :language             => "en"
     fattr(:date)                { Time.now.iso8601 }
     fattr(:rights)              {
-      "Copyright &#169; #{Time.parse(date).year} #{author}"
+      "Copyright © #{Time.parse(date).year} #{author}"
     }
     fattr(:stylesheets)         { FileList[base_stylesheet, code_stylesheet] }
     fattr(:extensions_to_source_formats) { {} }

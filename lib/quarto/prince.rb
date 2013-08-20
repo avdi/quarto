@@ -44,7 +44,7 @@ module Quarto
     end
 
     def pdf_file
-      "#{main.deliverable_dir}/book.pdf"
+      "#{main.deliverable_dir}/#{main.name}.pdf"
     end
 
     def prince_master_file
