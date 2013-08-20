@@ -540,7 +540,13 @@ div.titlepage p, div.halftitlepage p {
   padding: 0;
 }
 
-#TOC, nav[epub|type~='toc'], nav[epub\:type~='toc'] {
+// PrinceXML seems not to like finding this syntax: nav[epub|type~='toc']
+// Even though it's the #TOC selector that matters when PrinceXML is 
+// building a PDF, the presence of the CSS3 namespace syntax breaks the whole
+// rule. 
+
+//#TOC, nav[epub|type~='toc'], nav[epub\:type~='toc'] {
+#TOC, nav[epub\:type~='toc'] {
   page: frontmatter;
 
   ul, ol {

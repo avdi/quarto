@@ -36,7 +36,10 @@ module Quarto
         target = Pathname(t.name).relative_path_from(Pathname(exploded_epub))
         cd exploded_epub do
           files = FileList["**/*"]
+          # mimetype file MUST be the first one into the zip file, so
+          # we handle it separately.
           files.exclude("mimetype")
+          # -X: no extended attributes. These make the EPUB invalid.
           sh "zip -X -r #{target} mimetype #{files}"
         end
       end
