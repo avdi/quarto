@@ -3,9 +3,6 @@ module Quarto
     fattr(:version) { "3.0.1" }
 
     def define_tasks
-
-      task :deliverables => :epubcheck
-
       namespace :epubcheck do
         desc "Download and prepare epubcheck"
         task :vendor => epubcheck_jar

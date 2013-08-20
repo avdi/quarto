@@ -61,7 +61,7 @@ module Quarto
     fattr(:stylesheets)         { FileList[base_stylesheet, code_stylesheet] }
     fattr(:extensions_to_source_formats) { {} }
     fattr(:plugins)             { {} }
-    fattr(:deliverable_files)   { FileList[latex_file] }
+    fattr(:deliverable_files)   { FileList[] }
     fattr(:extra_asset_files)   { FileList[] }
     fattr(:font)                { 'serif' }
     fattr(:heading_font)        { '"PT Sans", sans-serif' }
