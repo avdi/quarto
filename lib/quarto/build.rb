@@ -6,6 +6,7 @@ require 'etc'
 require 'fattr'
 require 'time'
 require 'erb'
+require 'quarto/font'
 
 module Quarto
   class Build
@@ -66,6 +67,7 @@ module Quarto
     fattr(:bitmap_cover_image)  { nil }
     fattr(:vector_cover_image)  { nil }
     fattr(:cover_color)         { "black" }
+    fattr(:fonts)               {[]}
 
     def initialize
       yield self if block_given?
@@ -78,6 +80,10 @@ module Quarto
       plugin = plugin_class.new(self, *args, &block)
       plugin.enhance_build(self)
       plugins[plugin_name.to_sym] = plugin
+    end
+
+    def add_font(family, options={})
+      fonts << Font.new(family, options)
     end
 
     def define_tasks

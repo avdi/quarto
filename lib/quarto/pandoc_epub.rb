@@ -53,8 +53,12 @@ module Quarto
         create_epub_file(t.name, main.master_file, stylesheet: stylesheet)
       end
 
-      file stylesheet => [pandoc_epub_dir, *main.stylesheets] do |t|
-        sh "cat #{main.stylesheets} > #{t.name}"
+      file stylesheet => [pandoc_epub_dir, *main.stylesheets, fonts_stylesheet] do |t|
+        sh "cat #{main.stylesheets} #{fonts_stylesheet} > #{t.name}"
+      end
+
+      file fonts_stylesheet do |t|
+        create_fonts_stylesheet(t.name)
       end
 
       directory pandoc_epub_dir
@@ -72,6 +76,10 @@ module Quarto
         stylesheet_file = Pathname(options[:stylesheet])
           .relative_path_from(Pathname(master_dir))
         pandoc_flags.concat(%W[--epub-stylesheet #{stylesheet_file}])
+      end
+      main.fonts.each do |font|
+        font_path = Pathname(font.file).relative_path_from(Pathname(master_dir))
+        pandoc_flags.concat(%W[--epub-embed-font #{font_path}])
       end
       cd master_dir do
         sh pandoc, "-o", epub_file, master_file.pathmap("%f"), *pandoc_flags
@@ -116,6 +124,15 @@ module Quarto
       end
     end
 
+    def create_fonts_stylesheet(file=fonts_stylesheet)
+      puts "generate #{file}"
+      open(file, 'w') do |f|
+        main.fonts.each do |font|
+          f.puts(font.to_font_face_rule)
+        end
+      end
+    end
+
     def epub_file
       "#{main.deliverable_dir}/book.epub"
     end
@@ -140,5 +157,8 @@ module Quarto
       main.pandoc
     end
 
+    def fonts_stylesheet
+      "#{pandoc_epub_dir}/fonts.css"
+    end
   end
 end
