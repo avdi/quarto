@@ -48,9 +48,14 @@ module Quarto
         main.master_file,
         main.assets_file,
         main.deliverable_dir,
-        stylesheet
+        stylesheet,
+        metadata_file
       ] do |t|
-        create_epub_file(t.name, main.master_file, stylesheet: stylesheet)
+        create_epub_file(
+          t.name,
+          main.master_file,
+          stylesheet: stylesheet,
+          metadata_file: metadata_file)
       end
 
       file stylesheet => [pandoc_epub_dir, *main.stylesheets, fonts_stylesheet] do |t|
@@ -61,12 +66,26 @@ module Quarto
         create_fonts_stylesheet(t.name)
       end
 
+      file metadata_file => main.master_file do |t|
+        master_doc = open(main.master_file) do |f|
+          Nokogiri::XML(f)
+        end
+        open(t.name, 'w') do |f|
+          master_doc.css("meta").each do |meta|
+            if meta["name"] =~ /^DC\.(.*)$/
+              f.puts "<dc:#{$1}>#{meta["content"]}</dc:#{$1}>"
+            end
+          end
+        end
+      end
+
       directory pandoc_epub_dir
     end
 
     private
 
     def create_epub_file(epub_file, master_file, options={})
+      metadata_file = options.fetch(:metadata_file) { self.metadata_file }
       pandoc_flags = flags.dup
       master_dir = master_file.pathmap("%d")
       epub_file = Pathname(epub_file)
@@ -81,6 +100,9 @@ module Quarto
         font_path = Pathname(font.file).relative_path_from(Pathname(master_dir))
         pandoc_flags.concat(%W[--epub-embed-font #{font_path}])
       end
+      metadata_path =
+        Pathname(metadata_file).relative_path_from(Pathname(master_dir))
+      pandoc_flags.concat(%W[--epub-metadata #{metadata_path}])
       cd master_dir do
         sh pandoc, "-o", epub_file, master_file.pathmap("%f"), *pandoc_flags
       end
@@ -159,6 +181,10 @@ module Quarto
 
     def fonts_stylesheet
       "#{pandoc_epub_dir}/fonts.css"
+    end
+
+    def metadata_file
+      "#{pandoc_epub_dir}/metadata.xml"
     end
   end
 end

@@ -14,6 +14,7 @@ module Quarto
 
     XINCLUDE_NS = "http://www.w3.org/2001/XInclude"
     XHTML_NS    = "http://www.w3.org/1999/xhtml"
+    DC_NS       = "http://purl.org/dc/elements/1.1/"
 
     NAMESPACES = {
       "xhtml" => XHTML_NS,
@@ -52,6 +53,9 @@ module Quarto
     fattr :description          => ""
     fattr :language             => ENV["LANG"].to_s.split(".").first
     fattr(:date)                { Time.now.iso8601 }
+    fattr(:rights)              {
+      "Copyright &#169; #{Time.parse(date).year} #{author}"
+    }
     fattr(:stylesheets)         { FileList[base_stylesheet, code_stylesheet] }
     fattr(:extensions_to_source_formats) { {} }
     fattr(:plugins)             { {} }
@@ -105,6 +109,10 @@ module Quarto
 
     def author=(sole_author)
       self.authors = [sole_author]
+    end
+
+    def author
+      authors.join(", ")
     end
 
     def build_dir
@@ -258,6 +266,7 @@ module Quarto
         doc, head_elt, "DC.description", description)
       add_metadata_element(doc, head_elt, "DC.date", date)
       add_metadata_element(doc, head_elt, "DC.language", language)
+      add_metadata_element(doc, head_elt, "DC.rights", rights)
     end
 
     def add_metadata_element(doc, parent, name, value)
