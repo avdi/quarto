@@ -51,7 +51,7 @@ module Quarto
     fattr :description          => ""
     fattr :language             => ENV["LANG"].to_s.split(".").first
     fattr(:date)                { Time.now.iso8601 }
-    fattr(:stylesheets)         { [base_stylesheet, code_stylesheet] }
+    fattr(:stylesheets)         { FileList[base_stylesheet, code_stylesheet] }
     fattr(:extensions_to_source_formats) { {} }
     fattr(:plugins)             { {} }
     fattr(:deliverable_files)   { FileList[latex_file] }
@@ -287,7 +287,7 @@ module Quarto
       skel_doc.css("pre.sourceCode").each_with_index do |pre_elt, i|
         lang = pre_elt["class"].split[1]
         ext  = {"ruby" => "rb"}.fetch(lang){ lang.downcase }
-        code     = pre_elt.at_css("code").text
+        code     = strip_listing(pre_elt.at_css("code").text)
         digest   = Digest::SHA1.hexdigest(code)
         listing_path = "#{listings_dir}/#{digest}.#{ext}"
         if File.exist?(listing_path)
@@ -295,7 +295,7 @@ module Quarto
         else
           say("extract listing #{i} to #{listing_path}")
           open(listing_path, 'w') do |f|
-            f.write(strip_listing(code))
+            f.write(code)
           end
         end
         highlight_path = "#{highlights_dir}/#{digest}.html"
@@ -316,6 +316,10 @@ module Quarto
       end
     end
 
+    def highlights_file
+      "#{build_dir}/highlights.timestamp"
+    end
+
     def highlights_dir
       "#{build_dir}/highlights"
     end
@@ -334,13 +338,15 @@ module Quarto
 
     # Strip extraneous whitespace from around a code listing
     def strip_listing(code)
+      code = code.dup
+      code.strip!
       code.gsub!(/\t/, "  ")
       lines  = code.split("\n")
       first_code_line = lines.index{|l| l =~ /\S/}
       last_code_line  = lines.rindex{|l| l =~ /\S/}
       lines = lines[first_code_line..last_code_line]
       indent = lines.map{|l| l.index(/[^ ]/) || 0}.min
-      lines.map{|l| l[indent..-1]}.join("\n") + "\n"
+      lines.map{|l| l[indent..-1]}.join("\n")
     end
 
     def master_file
@@ -385,6 +391,10 @@ module Quarto
 
     def latex_file
       "#{deliverable_dir}/book.latex"
+    end
+
+    def pandoc
+      "pandoc"
     end
 
     def pandoc_vars
@@ -509,12 +519,15 @@ module Quarto
       task :deliverables => deliverable_files
 
       desc "Perform source-code highlighting"
-      task :highlight => [skeleton_file] do |t|
+      task :highlight => highlights_file
+
+      file highlights_file => [skeleton_file] do |t|
         highlights_needed  = highlights_needed_by(skeleton_file)
         missing_highlights = highlights_needed - FileList["#{highlights_dir}/*.html"]
         sub_task = Rake::MultiTask.new("highlight_dynamic", Rake.application)
-        sub_task.enhance(missing_highlights)
+        sub_task.enhance(missing_highlights.compact)
         sub_task.invoke
+        touch highlights_file
       end
 
       directory build_dir
@@ -576,13 +589,13 @@ module Quarto
         sh *%W[pygmentize -o #{t.name} #{t.source}]
       end
 
-      file master_file => [skeleton_file, :highlight] do |t|
+      file master_file => [skeleton_file, highlights_file] do |t|
         create_master_file(t.name, skeleton_file)
       end
 
       file latex_file => [master_file, assets_file] do |t|
         mkdir_p t.name.pathmap("%d")
-        sh "pandoc", *pandoc_vars, *%W[--standalone -o #{t.name} #{master_file}]
+        sh pandoc, *pandoc_vars, *%W[--standalone -o #{t.name} #{master_file}]
       end
 
       directory vendor_dir
