@@ -586,7 +586,7 @@ module Quarto
         [->(highlight_file){listing_for_highlight_file(highlight_file)}] do |t|
         dir = t.name.pathmap("%d")
         mkdir_p dir unless File.exist?(dir)
-        sh *%W[pygmentize -o #{t.name} #{t.source}]
+        sh "pygmentize -o #{t.name} -f html #{t.source}"
       end
 
       file master_file => [skeleton_file, highlights_file] do |t|

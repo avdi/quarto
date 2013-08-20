@@ -9,7 +9,7 @@ module Quarto
       attr_accessor :pandoc_epub
     end
 
-    fattr(:flags) { %W[-w epub3 --epub-chapter-level 2 --no-highlight --toc --parse-raw] }
+    fattr(:flags) { %W[-w epub3 --epub-chapter-level 2 --no-highlight --toc] }
     fattr(:xml_write_options) {
       Nokogiri::XML::Node::SaveOptions::DEFAULT_XHTML |
       Nokogiri::XML::Node::SaveOptions::NO_DECLARATION
@@ -44,7 +44,12 @@ module Quarto
         sh *%W[unzip #{pristine_epub} -d #{exploded_epub}]
       end
 
-      file pristine_epub => [main.master_file, main.deliverable_dir, stylesheet] do |t|
+      file pristine_epub => [
+        main.master_file,
+        main.assets_file,
+        main.deliverable_dir,
+        stylesheet
+      ] do |t|
         create_epub_file(t.name, main.master_file, stylesheet: stylesheet)
       end
 
@@ -77,7 +82,7 @@ module Quarto
       files = FileList["#{epub_dir}/**/*.xhtml"]
       files.each do |file|
         doc = open(file) { |f|
-          Nokogiri::HTML(f)
+          Nokogiri::XML(f)
         }
         listing_elts = doc.css("pre > code")
         if listing_elts.empty?
@@ -101,14 +106,13 @@ module Quarto
           else
             puts "  no highlight found for listing ##{index + 1}"
             puts "----"
-            puts code
+            puts listing_elt.text
             puts "----"
           end
         end
         open(file, 'w') do |f|
           doc.write_xml_to(f, save_with: xml_write_options)
         end
-        sh "grep -v '^<?xml' #{file} > #{file}"
       end
     end
 

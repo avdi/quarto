@@ -1,0 +1,705 @@
+/* Sample style sheet for boom!, the book microformat              */
+/* written  by Hakon Wium Lie and Bert Bos, November 2005          */
+/* Converted to SCSS and improved by Noel Rappin                   */
+/* You may reuse this style sheet for any purpose without any fees */
+
+@namespace epub "http://www.idpf.org/2007/ops"
+
+html {
+  margin: 0;
+}
+
+html, p {
+  font: 12pt/1.4 $font, serif;
+}
+
+body {
+  margin: 0 0 0 0;
+}
+
+img {
+  width: 100%;
+}
+
+h1, h2 {
+  margin: 2em 0 0.5em 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $heading_font;
+  font-weight: bold;
+  page-break-after: avoid;
+  color: $heading_color;
+}
+
+h1 {
+  page-break-before: always;
+  padding: 0.5em 0 0.5em 0;
+  margin: 0;
+  margin-top: 10ex;
+  font-weight: 900;
+  text-align: right;
+  border-bottom: 1pt solid lighten($heading_color, 50%);
+}
+
+h2 {
+  page-break-before: always;
+  text-align: left;
+  font-weight: bold;
+}
+
+h3 {
+  font-weight: normal;
+  font-size: 12pt;
+  font-style: normal;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  color: lighten($heading_color, 50%);
+}
+
+h3 + div p:first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.sidebar-title {
+  font-family: $heading_font;
+  font-weight: bold;
+  text-align: center;
+  color: $heading_color;
+  margin: 0.5em 0 0em 0;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.issue {
+  font-size: 1em;
+  font-weight: bold;
+  padding: 1em 0px 1em 10px;
+  margin: 0 200px 0 100px;
+  background-color: #50b9f9;
+}
+
+q::before {
+  content: "\201C";
+}
+
+q::after {
+  content: "\201D";
+}
+
+/*p { margin: 0 }*/
+/*p + p { text-indent: 1.3em }*/
+p.sidenote + p, p.caption, p.art { text-indent: 0 }
+
+p.author {
+  margin-top: 2em;
+  text-indent: 0;
+  text-align: right;
+}
+
+pre {  
+  margin: 1em 1.3em;
+  border-radius: 1ex;
+  padding: 1ex;
+}
+
+a { text-decoration: none; }
+
+/* cross-references */
+
+a.pageref::after { content: " on page " target-counter(attr(href), page); }
+a.chapref::before { content: " Chapter " target-counter(attr(href), chapter) ", "; }
+a.figref { content: " Figure " target-counter(attr(href), figure); }
+a.tableref { content: " Table " target-counter(attr(href), figure); }
+
+figure {
+  border: solid black 1px;
+  margin: 5px;
+  padding: 5px;
+  figcaption {
+    font-family: "PT Sans", sans-serif;
+    font-weight: bold;
+    display: block;
+    color: $heading_color;
+    &::before {
+      content: " Figure " counter(figure) ": ";
+    }
+
+  }
+}
+
+/* sidenotes */
+
+.sidenote {
+  float: left;
+  clear: left;
+  margin: 0 0 1em -41%;
+  width: 37%;
+  font-size: 0.9em;
+  font-style: normal;
+  text-indent: 0;
+  text-align: right;
+  page-break-inside: avoid;
+  background: #50b9f9;
+}
+
+.code-filename {
+  color: $heading_color;
+  font-family: "PT Sans", sans-serif;
+  font-weight: bold;
+
+  &:before {
+    content: "Filename: "
+  }
+}
+
+.code-caption {
+  font-family: "PT Sans", sans-serif;
+  font-weight: bold;
+  color: $heading_color;
+  text-align: center;
+}
+
+/* sidebars */
+
+.sidebar {
+  float: right;
+  clear: right;
+  /* margin: 0 3em 1em -20%; */
+  margin: 0 1.5em 1em 1em;
+  font-size: 10pt;
+  width: 40%;
+  border-left: thin solid black;
+  text-align: justify;
+  /*background: #DDFFFF;*/
+  padding: 0.5em 0.5em;
+  //  page-break-inside: avoid;
+  /*column-count: 2;
+    column-gap: 1.5em; */
+
+  h3 {
+    margin-top: 0;
+    text-align: center;
+    border-bottom: thin solid black;
+  }
+
+  pre {
+    font-size: 10pt;
+  }
+
+  .sidebar-body {
+    margin-bottom: 1em;
+  }
+}
+
+.coffeescript {
+  background-image: url(../images/cs_logo.png);
+  background-repeat: no-repeat;
+  background-position: 5px 0px;
+  background-size: 10px;
+  background-image-resolution: 400dpi;
+}
+
+/* figures and tables*/
+
+div.figure {
+  margin: 1em 0;
+  counter-increment: figure;
+}
+
+figure {
+  margin: 1em 0;
+  counter-increment: figure;
+  text-align: center;
+}
+
+div.CodeRay {
+  counter-increment: sample;
+}
+
+div.code-caption::before {
+  content: "Sample " counter(chapter) "-" counter(section) "-" counter(sample) ": ";
+}
+
+div.figure .caption, div.table .caption {
+  float: left;
+  clear: left;
+  width: 37%;
+  text-align: right;
+  font-size: 0.9em;
+  margin: 0 0 1.2em -40%;
+}
+
+ol li, ul li {
+  margin-bottom: 1em;
+}
+
+
+
+div.figure .caption::before {
+  content: "Figure " counter(figure) ": ";
+  font-weight: bold;
+}
+
+div.table .caption::before {
+  content: "Table " counter(table) ": ";
+  font-weight: bold;
+}
+
+div.table {
+  margin: 1em 0;
+  counter-increment: table;
+}
+
+div.table th {
+  text-align: left;
+}
+
+table th, table td {
+  text-align: left;
+  padding-right: 1em;
+  border-top: none;
+  border-bottom: thin dotted;
+}
+
+table.lined td, table.lined th {
+  border-top: none;
+  border-bottom: thin dotted;
+  padding-top: 0.2em;
+  padding-bottom: 0.2em;
+}
+
+
+@page {
+  margin: 27mm 16mm 27mm 16mm;
+  size: $print_page_width $print_page_height;
+
+  @footnotes {
+    border-top: thin solid black;
+    padding-top: 0.3em;
+    margin-top: 0.6em;
+    margin-left: 0%;
+    margin-bottom: 1em;
+  }
+}
+
+
+/* define default page and names pages: cover, blank, frontmatter */
+
+@page :left {
+  @top-left {
+    font: 11pt $font, serif;
+    content: $title;
+    vertical-align: bottom;
+    padding-bottom: 0.5em;
+    border-bottom: thin solid black;
+  }
+
+  @bottom-left {
+    font: 11pt $font, serif;
+    content: counter(page);
+    padding-top: 0.5em;
+    vertical-align: top;
+    border-top: thin solid black;
+  }
+
+  @bottom-right {
+    font: 11pt $font, serif;
+    content: $rslug;
+    padding-top: 0.5em;
+    text-align: right;
+    vertical-align: top;
+    border-top: thin solid black;
+  }
+}
+
+@page :right {
+  @top-right {
+    font: 11pt $font, serif;
+    content: string(header, first);
+    vertical-align: bottom;
+    padding-bottom: 0.5em;
+    margin-bottom: 0.5 em;
+    border-bottom: thin solid black;
+  }
+
+  @bottom-left {
+    font: 11pt $font, serif;
+    content: $lslug;
+    padding-top: 0.5em;
+    vertical-align: top;
+    border-top: thin solid black;
+  }
+
+  @bottom-right {
+    font: 11pt $font, serif;
+    content: counter(page);
+    text-align: right;
+    vertical-align: top;
+    padding-top: 0.5em;
+    border-top: thin solid black;
+  }
+}
+
+@page frontmatter :left {
+  @top-left {
+    font: 11pt $font, serif;
+    content: string(title);
+    vertical-align: bottom;
+    padding-bottom: 2em;
+  }
+
+  @bottom-left {
+    font: 11pt $font, serif;
+    content: counter(page, lower-roman);
+    padding-top: 2em;
+    vertical-align: top;
+  }
+}
+
+@page cover { margin: 0; }
+
+@page frontmatter :right {
+  @top-right {
+    font: 11pt $font, serif;
+    content: string(header, first);
+    vertical-align: bottom;
+    padding-bottom: 2em;
+  }
+
+  @bottom-right {
+    font: 11pt $font, serif;
+    content: counter(page, lower-roman);
+    text-align: right;
+    vertical-align: top;
+    padding-top: 2em;
+  }
+}
+
+@page blank :left {
+  @top-left { content: normal }
+  @bottom-left { content: normal }
+}
+
+@page blank :right {
+  @top-right { content: normal }
+  @bottom-right { content: normal }
+}
+
+/* footnotes */
+
+.footnote {
+  display: none;                   /* default rule */
+  display: prince-footnote;        /* prince-specific rules */
+  position: footnote;
+  footnote-style-position: inside;
+  counter-increment: footnote;
+  //  margin-left: 1.4em;
+  font-size: 9pt;
+  line-height: 1.4;
+}
+
+a.footnote {
+  display: inline;
+  margin-left: 0em;
+  font-size: 9pt;
+  line-height: 1;
+}
+
+.footnote code, .footnote pre {
+  font-size: 10pt;
+}
+
+.footnote::footnote-call {
+  vertical-align: super;
+  font-size: 80%;
+}
+
+.footnote::footnote-marker {
+  vertical-align: super;
+  color: green;
+  padding-right: 0.4em;
+}
+
+
+//   A book consists of different types of sections. We propose to use
+//   DIV elements with these class names:
+
+// frontcover
+// halftitlepage: contains the title of the book
+// titlepage: contains the title of the book, name of author(s) and publisher
+// imprint: left page with copyright, publisher, library printing information
+// dedication: right page with short dedication
+// foreword: written by someone other than the author(s)
+// toc: table of contents
+// preface: preface, including acknowledgements
+// chapter: each chapter is given its own DIV element
+// references: contains list of references
+// appendix: each appendix is given its own
+// bibliography
+// glossary
+// index
+// colophon: describes how the book was produced
+// backcover
+
+// A book will use several of the types listed above, but few books
+// will use all of them.
+
+/* which section uses which named page */
+
+div.halftitlepage, div.titlepage, div.imprint, div.dedication { page: blank }
+div.foreword, div.toc, div.preface { page: frontmatter }
+
+
+/* page breaks */
+
+div.frontcover, div.halftitlepage, div.titlepage { page-break-before: right }
+div.imprint { page-break-before: always }
+div.dedication, div.foreword, div.toc, div.preface, section.chapter, div.reference,
+div.appendix, div.bibliography, div.glossary, div.index, div.colophon, section.chapter {
+  page-break-before: always
+}
+
+div.backcover {
+  page-break-before: left;
+  page: cover;
+  /*background-image: url(../images/b_cover.jpg);*/
+  position: absolute;
+  width:  print_page_width;
+  height: print_page_height;
+  left: 0; top: 0;
+  z-index: -1;
+}
+
+div.frontcover {
+  page: cover;
+  @if $vector_cover_image {
+    background-image: $vector_cover_image;
+  }
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-color: $cover_color;
+  background-size: contain;
+  position: absolute;
+  /* background-image-resolution: 275dpi; */
+  width:  $print_page_width;
+  height: $print_page_height;
+  margin: 0px;
+  padding: 0px;
+  left: 0; top: 0;
+  z-index: -1;
+}
+
+div.frontcover img {
+  position: absolute;
+  width:  $print_page_width;
+  height: $print_page_height;
+  left: 0; top: 0;
+  z-index: -1;
+}
+
+div.frontcover h1 {
+  position: absolute;
+  left: 2cm; top: 1cm;
+  color: white;
+  font-size: 44pt;
+  font-weight: normal;
+}
+
+div.frontcover h2 {
+  position: absolute;
+  right: 0; top: 5cm;
+  color: black;
+  background: white;
+  font-size: 16pt;
+  font-weight: normal;
+  padding: 0.2em 5em 0.2em 1em;
+  letter-spacing: 0.15em;
+}
+
+div.frontcover h3 {
+  position: absolute;
+  left: 2cm; top: 7cm;
+  color: white;
+  font-size: 24pt;
+  font-weight: normal;
+}
+
+div.frontcover p {
+  position: absolute;
+  left: 2cm; bottom: 1.5cm;
+  font-size: 24pt;
+  color: black;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+
+/* titlepage, halftitlepage */
+
+div.titlepage h1, div.halftitlepage h1 { margin-bottom: 2em; }
+div.titlepage h2, div.halftitlepage h2 { font-size: 1.2em; margin-bottom: 3em; }
+div.titlepage h3, div.halftitlepage h3 { font-size: 1em; margin-bottom: 3em; }
+div.titlepage p, div.halftitlepage p {
+  font-size: 1.4em;
+  font-weight: bold;
+  margin: 0; 
+  padding: 0;
+}
+
+#TOC, nav[epub|type~='toc'], nav[epub\:type~='toc'] {
+  page: frontmatter;
+
+  ul, ol {
+    padding-left: 0;
+    margin-left: 0;
+    list-style-type: none;
+
+    ul ul, ol ol {
+      display: none;
+    }
+
+    li {
+      a:after {
+        font-weight: normal;
+        content: leader(".") target-counter(attr(href), page);
+      }
+      margin: 0;
+      padding: 0;
+    }
+
+    & > li {
+      font-weight: bold;
+    }
+
+    ul li, ol li {
+      font-weight: normal;
+      list-style-type: none;
+    }
+
+    & > ul, & > ol {
+      page-break-inside: avoid;
+    }
+
+    ul, ol {
+      margin-left: 0.5em;
+      padding-left: 0.5em;
+    }
+  }
+}
+
+section.chapter:first-of-type {
+  counter-reset: page 1;
+}
+
+/* chapter numbers */
+
+section.chapter { 
+  counter-increment: chapter; 
+  counter-reset: section; 
+}
+
+h1::before {
+  white-space: pre;
+  font-size: 50%;
+  text-align: right;
+}
+
+section.chapter h1::before { 
+  content: "Chapter " counter(chapter) " \A";
+}
+
+div.frontcover h1::before, div.titlepage h1::before, div.halftitlepage h1::before {
+  content: normal;                  /* that is, none */
+}
+
+h1 { string-set: header content();}
+section.chapter h1 { string-set: header "Chapter " counter(chapter) ": " content(); }
+
+section.chapter h2 { counter-increment: section; counter-reset: sample; }
+
+section.chapter h2::before {
+  color: lighten($heading_color, 50%);
+  content: counter(chapter) "." counter(section) " "; 
+}
+
+//h2 { string-set: header content();}
+section.chapter h2 { 
+  string-set: header "Section " counter(chapter) "." counter(section) ": " content(); 
+}
+
+div.frontcover h1::before, div.titlepage h1::before, div.halftitlepage h1::before {
+  content: normal;                  /* that is, none */
+}
+
+
+/* index */
+
+ul.index {
+  list-style-type: none;
+  margin: 0; padding: 0;
+  column-count: 2;
+  column-gap: 1em;
+}
+
+ul.index a::after { content: ", " target-counter(attr(href), page); }
+
+
+span.element, span.attribute {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 80%;
+}
+span.property { font-weight: bold }
+pre, code, span.css, span.value, span.declaration {
+  color: $heading_color;
+  font-family: "Source Code Pro", "Inconsolata", "Anonymous Pro", "DejaVu Sans Mono", "Lucida Console", "Lucida Sans Typewriter", monospace;
+}
+
+pre {
+  font-size: 10pt;
+  page-break-inside: avoid;
+}
+
+div.imprint {
+  .title {
+    font-size: 2.5em;
+    font-weight: 900;
+    margin-left: 25px;
+    margin-right: 25px;
+    text-align: center;
+  }
+
+  .subtitle {
+    font-size: 2em;
+    font-weight: bold;
+    margin-left: 25px;
+    margin-right: 25px;
+    text-align: center;
+  }
+}
+
+@media screen, handheld {
+  html { margin: 1em; font: 14px $font, sans-serif; }
+  h1 { margin-bottom: 0.5em }
+  div.frontcover, div.halftitlepage, div.titlepage, div.imprint,
+  div.dedication, div.foreword, div.toc, div.index { display: none }
+}
+
+
+div.white_page { page: cover; }
+
+
+
+@media print, handheld {
+  pre {
+    white-space: pre-wrap;
+  }
+}
+
+@media screen {
+  pre {
+    overflow: auto;
+  }
+}

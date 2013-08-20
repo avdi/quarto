@@ -139,12 +139,12 @@ END
       end
       subsection_elts = doc.css("div.outline-4")
       subsection_elts.each do |elt|
-        elt.name = "subsection"
+        elt.name = "section"
         elt["class"] = "subsection"
       end
       subsubsection_elts = doc.css("div.outline-5")
       subsubsection_elts.each do |elt|
-        elt.name = "subsubsection"
+        elt.name = "section"
         elt["class"] = "subsubsection"
       end
     end
