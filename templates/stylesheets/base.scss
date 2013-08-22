@@ -35,7 +35,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  page-break-before: right;
+  @media print {
+    page-break-before: right;
+  }
+  @media screen {
+    page-break-before: always;
+  }
   padding: 0.5em 0 0.5em 0;
   margin: 0;
   margin-top: 10ex;
@@ -370,7 +375,10 @@ div.frontcover p {
 /* titlepage, halftitlepage */
 
 div.titlepage h1, div.halftitlepage h1 { margin-bottom: 2em; }
-div.titlepage h2, div.halftitlepage h2 { font-size: 1.2em; margin-bottom: 3em; }
+div.titlepage h2, div.halftitlepage h2 { 
+  font-size: 1.2em; 
+  margin-bottom: 3em; 
+}
 div.titlepage h3, div.halftitlepage h3 { font-size: 1em; margin-bottom: 3em; }
 div.titlepage p, div.halftitlepage p {
   font-size: 1.4em;
