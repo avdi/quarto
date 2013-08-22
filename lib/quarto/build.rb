@@ -8,6 +8,7 @@ require 'fattr'
 require 'time'
 require 'erb'
 require 'quarto/font'
+require 'quarto/stylesheet_set'
 
 module Quarto
   class Build
@@ -58,24 +59,22 @@ module Quarto
     fattr(:rights)              {
       "Copyright © #{Time.parse(date).year} #{author}"
     }
-    fattr(:stylesheets)         { FileList[base_stylesheet, code_stylesheet] }
     fattr(:extensions_to_source_formats) { {} }
     fattr(:plugins)             { {} }
     fattr(:deliverable_files)   { FileList[] }
     fattr(:extra_asset_files)   { FileList[] }
-    fattr(:font)                { 'serif' }
-    fattr(:heading_font)        { '"PT Sans", sans-serif' }
-    fattr(:heading_color)       { "black" }
-    fattr(:left_slug)           { nil }
-    fattr(:right_slug)          { nil }
-    fattr(:print_page_width)    { "7.5in" }
-    fattr(:print_page_height)   { "9in"   }
+    fattr(:all_master_files)    {
+      FileList[
+        master_file,
+        assets_file,
+      ]
+    }
+    fattr(:fonts)               {[]}
     fattr(:bitmap_cover_image)  { nil }
     fattr(:vector_cover_image)  { nil }
-    fattr(:cover_color)         { "black" }
-    fattr(:fonts)               {[]}
 
     def initialize
+      use :stylesheet_set
       yield self if block_given?
     end
 
@@ -95,6 +94,12 @@ module Quarto
     def define_tasks
       define_main_tasks
       define_plugin_tasks
+    end
+
+    def finalize
+      plugins.values.each do |plugin|
+        plugin.finalize_build(self)
+      end
     end
 
     def source_exclusions
@@ -199,22 +204,6 @@ module Quarto
       "build/sources"
     end
 
-    def code_stylesheet
-      "#{build_dir}/code.css"
-    end
-
-    def base_stylesheet
-      "#{build_dir}/base.css"
-    end
-
-    def base_stylesheet_scss
-      "#{build_dir}/base.scss"
-    end
-
-    def base_stylesheet_template
-      File.expand_path("../../../templates/base.scss", __FILE__)
-    end
-
     def spine_file
       "build/spine.xhtml"
     end
@@ -230,12 +219,9 @@ module Quarto
       add_metadata_to_doc(doc) if options[:metadata]
       doc.root.add_namespace("xi", "http://www.w3.org/2001/XInclude")
       head_elt = doc.root.at_css("head")
-      stylesheets = Array(options[:stylesheets])
+      stylesheets = options[:stylesheets]
       stylesheets.each do |stylesheet|
-        head_elt.add_child(
-          doc.create_element(
-            "style",
-            File.read(stylesheet)))
+        head_elt.add_child(stylesheet.link_tag)
       end
       section_files.each do |section_file|
         doc.root["xml:base"] = ".."
@@ -481,38 +467,6 @@ module Quarto
       ["xmllint", *xmlflags, *args]
     end
 
-    def add_scss_variables(source_file, output_file, variables)
-      open(output_file, 'w') do |out|
-        out.puts "// BEGIN AUTO VARIABLES"
-        out.puts scss_variable_assignments(variables)
-        out.puts "// END AUTO VARIABLES"
-        open(source_file) do |source|
-          IO.copy_stream(source, out)
-        end
-      end
-    end
-
-    def scss_variable_assignments(variables)
-      variables.each_with_object("") do |(name, value), s|
-        value = value.nil? ? "null" : value
-        s << "$#{name}: #{value};\n"
-      end
-    end
-
-    def stylesheet_variables
-      {
-        font: font,
-        heading_font: heading_font,
-        heading_color: heading_color,
-        title: %Q("#{title}"),
-        lslug: left_slug,
-        rslug: right_slug,
-        print_page_width: print_page_width,
-        print_page_height: print_page_height,
-        vector_cover_image: "url(#{vector_cover_image})",
-        cover_color: cover_color,
-      }
-    end
 
     def define_main_tasks
       task :default => :deliverables
@@ -570,22 +524,7 @@ module Quarto
         end
       end
 
-      file code_stylesheet do |t|
-        sh "pygmentize -S colorful -f html > #{t.name}"
-      end
-
-      file base_stylesheet => base_stylesheet_scss do |t|
-        sh *%W[sass --scss #{base_stylesheet_scss} #{t.name}]
-      end
-
-      file base_stylesheet_scss => base_stylesheet_template do |t|
-        add_scss_variables(
-          base_stylesheet_template,
-          t.name,
-          stylesheet_variables)
-      end
-
-      file spine_file => [build_dir, *stylesheets] do |t|
+      file spine_file => [build_dir] do |t|
         create_spine_file(t.name, section_files, stylesheets: stylesheets)
       end
 

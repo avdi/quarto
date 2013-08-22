@@ -1,9 +1,11 @@
 require "quarto/plugin"
 require "nokogiri"
 require "delegate"
+require "quarto/path_helpers"
 
 module Quarto
   class PandocEpub < Plugin
+    include PathHelpers
     module BuildExt
       extend Forwardable
 
@@ -51,9 +53,9 @@ module Quarto
       end
 
       file pristine_epub => [
-        main.master_file,
-        main.assets_file,
+        *main.all_master_files,
         main.deliverable_dir,
+        main.bitmap_cover_image,
         stylesheet,
         metadata_file,
         *font_files
@@ -63,7 +65,8 @@ module Quarto
           main.master_file,
           stylesheet: stylesheet,
           metadata_file: metadata_file,
-          font_files: font_files)
+          font_files: font_files,
+          cover_image: main.bitmap_cover_image)
       end
 
       file stylesheet => [pandoc_epub_dir, *main.stylesheets, fonts_stylesheet] do |t|
@@ -71,7 +74,7 @@ module Quarto
       end
 
       file fonts_stylesheet do |t|
-        create_fonts_stylesheet(t.name)
+        create_fonts_stylesheet(t.name, fonts)
       end
 
       file metadata_file => main.master_file do |t|
@@ -100,22 +103,22 @@ module Quarto
     def create_epub_file(epub_file, master_file, options={})
       metadata_file = options.fetch(:metadata_file) { self.metadata_file }
       font_files    = options.fetch(:font_files)    { [] }
-      pandoc_flags = flags.dup
-      master_dir = master_file.pathmap("%d")
-      epub_file = Pathname(epub_file)
-        .relative_path_from(Pathname(master_dir))
-        .to_s
-      if options[:stylesheet]
-        stylesheet_file = Pathname(options[:stylesheet])
-          .relative_path_from(Pathname(master_dir))
+      pandoc_flags  = flags.dup
+      master_dir    = master_file.pathmap("%d")
+      epub_file     = rel_path(epub_file, master_dir)
+      metadata_path = rel_path(metadata_file, master_dir)
+      if stylesheet_file = options[:stylesheet]
+        stylesheet_file = rel_path(stylesheet_file, master_dir)
         pandoc_flags.concat(%W[--epub-stylesheet #{stylesheet_file}])
       end
+      if cover_image = options[:cover_image]
+        pandoc_flags.concat(
+          %W[--epub-cover-image #{rel_path(cover_image, master_dir)}])
+      end
       font_files.each do |font_file|
-        font_path = Pathname(font_file).relative_path_from(Pathname(master_dir))
+        font_path = rel_path(font_file, master_dir)
         pandoc_flags.concat(%W[--epub-embed-font #{font_path}])
       end
-      metadata_path =
-        Pathname(metadata_file).relative_path_from(Pathname(master_dir))
       pandoc_flags.concat(%W[--epub-metadata #{metadata_path}])
       cd master_dir do
         sh pandoc, "-o", epub_file, master_file.pathmap("%f"), *pandoc_flags
@@ -160,7 +163,7 @@ module Quarto
       end
     end
 
-    def create_fonts_stylesheet(file=fonts_stylesheet)
+    def create_fonts_stylesheet(file, fonts)
       puts "generate #{file}"
       open(file, 'w') do |f|
         fonts.each do |font|
@@ -251,5 +254,6 @@ module Quarto
         end
       }
     end
+
   end
 end

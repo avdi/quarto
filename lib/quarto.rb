@@ -28,6 +28,7 @@ module Quarto
 
   def self.configure
     yield build
+    build.finalize
     build.define_tasks
   end
 

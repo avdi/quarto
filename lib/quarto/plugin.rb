@@ -15,6 +15,10 @@ module Quarto
       # placeholder
     end
 
+    def finalize_build(build)
+      # placeholder
+    end
+
     def define_tasks
       # placeholder
     end
