@@ -55,7 +55,7 @@ h3 {
   color: lighten($heading_color, 50%);
 }
 
-h3 + div p:first-child {
+h3 + div p:first-of-type, .first-para-after-h3 {
   margin-top: 0;
   padding-top: 0;
 }

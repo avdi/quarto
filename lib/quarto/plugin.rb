@@ -7,8 +7,11 @@ module Quarto
 
     attr_reader :main
 
-    def initialize(main)
+    def initialize(main, options={})
       @main = main
+      options.each do |name, value|
+        public_send(name, value)
+      end
     end
 
     def enhance_build(build)
