@@ -8,7 +8,11 @@ html {
 }
 
 html, p {
-  font: 12pt/1.4 $font, serif;
+  font-family: $font, serif;
+  line-height: 1.4;
+  @media print {
+    font-size: 12pt;
+  }
 }
 
 body {
@@ -48,7 +52,9 @@ h2 {
 
 h3 {
   font-weight: normal;
-  font-size: 12pt;
+  @media print {
+    font-size: 12pt;
+  }
   font-style: normal;
   margin-bottom: 0;
   padding-bottom: 0;
@@ -166,7 +172,9 @@ figure {
   clear: right;
   /* margin: 0 3em 1em -20%; */
   margin: 0 1.5em 1em 1em;
-  font-size: 10pt;
+  @media print {
+    font-size: 10pt;
+  }
   width: 40%;
   border-left: thin solid black;
   text-align: justify;
@@ -183,7 +191,9 @@ figure {
   }
 
   pre {
-    font-size: 10pt;
+    @media print {
+      font-size: 10pt;
+    }
   }
 
   .sidebar-body {
@@ -270,19 +280,25 @@ table.lined td, table.lined th {
   footnote-style-position: inside;
   counter-increment: footnote;
   //  margin-left: 1.4em;
-  font-size: 9pt;
+  @media print {
+    font-size: 9pt;
+  }
   line-height: 1.4;
 }
 
 a.footnote {
   display: inline;
   margin-left: 0em;
-  font-size: 9pt;
+  @media print {
+    font-size: 9pt;
+  }
   line-height: 1;
 }
 
 .footnote code, .footnote pre {
-  font-size: 10pt;
+  @media print {
+    font-size: 10pt;
+  }
 }
 
 .footnote::footnote-call {
@@ -297,44 +313,54 @@ a.footnote {
 }
 
 div.frontcover img {
-  position: absolute;
-  width:  $print_page_width;
-  height: $print_page_height;
+  @media print {
+    position: absolute;
+    width:  $print_page_width;
+    height: $print_page_height;
+  }
   left: 0; top: 0;
   z-index: -1;
 }
 
 div.frontcover h1 {
-  position: absolute;
-  left: 2cm; top: 1cm;
   color: white;
-  font-size: 44pt;
+  @media print {
+    position: absolute;
+    left: 2cm; top: 1cm;
+    font-size: 44pt;
+  }
   font-weight: normal;
 }
 
 div.frontcover h2 {
-  position: absolute;
-  right: 0; top: 5cm;
+  @media print {
+    position: absolute;
+    right: 0; top: 5cm;
+    font-size: 16pt;
+  }
   color: black;
   background: white;
-  font-size: 16pt;
   font-weight: normal;
   padding: 0.2em 5em 0.2em 1em;
   letter-spacing: 0.15em;
 }
 
 div.frontcover h3 {
-  position: absolute;
-  left: 2cm; top: 7cm;
+  @media print {
+    position: absolute;
+    left: 2cm; top: 7cm;
+    font-size: 24pt;
+  }
   color: white;
-  font-size: 24pt;
   font-weight: normal;
 }
 
 div.frontcover p {
-  position: absolute;
-  left: 2cm; bottom: 1.5cm;
-  font-size: 24pt;
+  @media print {
+    position: absolute;
+    left: 2cm; bottom: 1.5cm;
+    font-size: 24pt;
+  }
   color: black;
   font-weight: bold;
   text-transform: uppercase;
@@ -422,7 +448,9 @@ pre, code, span.css, span.value, span.declaration {
 }
 
 pre {
-  font-size: 10pt;
+  @media print {
+    font-size: 10pt;
+  }
   page-break-inside: avoid;
 }
 
