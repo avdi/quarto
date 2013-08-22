@@ -232,9 +232,17 @@ module Quarto
       end
     end
 
+    # Styling the table of contents is a nightmare. A typical EPUB3
+    # TOC is contained in a nav element like this: <nav
+    # epub:type="toc">...</nav>. I've had limited success using either
+    # namespaced (CSS3) attribute value selectors
+    # (nav[epub|type='toc']) or escaped attribute value selectors
+    # (nav[epub\:type='toc']). But in theory even the dumbest CSS
+    # parser should support a simple ID attribute. So here we add an
+    # ID as a lowest-common-denominator way to find and style the TOC.
     def add_class_to_toc(nav_file)
       doc = open(nav_file) {|f| Nokogiri::XML(f)}
-      doc.at_css("nav")["class"] = "TOC"
+      doc.at_css("nav")["id"] = "TOC"
       open(nav_file, 'w') do |f|
         doc.write_xml_to(f, save_with: xml_write_options)
       end
