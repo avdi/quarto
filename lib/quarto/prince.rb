@@ -12,6 +12,10 @@ module Quarto
     end
 
     fattr(:cover_image)
+    fattr(:xml_write_options) {
+      Nokogiri::XML::Node::SaveOptions::DEFAULT_XML |
+      Nokogiri::XML::Node::SaveOptions::NO_DECLARATION
+    }
 
     def enhance_build(build)
       build.deliverable_files << pdf_file
@@ -29,12 +33,12 @@ module Quarto
         task :pdf => pdf_file
       end
 
-      file pdf_file => [prince_master_file, main.assets_file] do |t|
+      file pdf_file => [prince_master_file] do |t|
         mkdir_p t.name.pathmap("%d")
-        sh *%W[prince #{prince_master_file} -o #{t.name}]
+        generate_pdf_file(pdf_file, prince_master_file)
       end
 
-      file prince_master_file => [main.master_file, toc_file, stylesheet] do |t|
+      file prince_master_file => [main.master_file, main.assets_file, toc_file, stylesheet] do |t|
         create_prince_master_file(prince_master_file, main.master_file, stylesheet)
       end
 
@@ -70,7 +74,7 @@ module Quarto
     end
 
     def toc_file
-      "#{main.build_dir}/prince/toc.xml"
+      "#{prince_dir}/toc.xml"
     end
 
     def stylesheet
@@ -111,7 +115,7 @@ module Quarto
         end)
       embed_images(doc)
       open(prince_master_file, 'w') do |f|
-        doc.write_xml_to(f)
+        doc.write_xml_to(f, save_with: xml_write_options)
       end
     end
 
@@ -122,6 +126,10 @@ module Quarto
           elt["src"] = data_uri_for_file(uri.path)
         end
       end
+    end
+
+    def generate_pdf_file(pdf_file, master_file)
+      sh *%W[prince #{master_file} -o #{t.name}]
     end
   end
 end
