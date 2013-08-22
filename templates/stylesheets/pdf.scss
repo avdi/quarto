@@ -1,0 +1,12 @@
+@import "toc";
+
+/* Note for the ages: PrinceXML seems not to like finding this syntax:
+/* nav[epub|type~='toc'] Even though it's the #TOC selector that
+/* matters when PrinceXML is building a PDF, the presence of the CSS3
+/* namespace syntax breaks the whole rule. */
+
+#TOC {
+  page: frontmatter;
+
+  @include toc;
+}

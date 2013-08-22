@@ -1,9 +1,11 @@
 require "quarto/path_helpers"
+require "quarto/uri_helpers"
 require "base64"
 
 module Quarto
   class Stylesheet
     include PathHelpers
+    include UriHelpers
 
     fattr(:stylesheets)
     fattr(:path)
@@ -32,11 +34,7 @@ module Quarto
     end
 
     def data_uri
-      data         = File.read(master_file)
-      encoded_data = Base64.encode64(data)
-      uri          = "data:text/css;base64,"
-      uri << encoded_data
-      uri
+      data_uri_for_file(master_file, "text/css")
     end
 
     def applicable_to_targets?(*targets)

@@ -1,0 +1,8 @@
+@import "toc";
+
+@namespace epub "http://www.idpf.org/2007/ops";
+
+nav[epub|type~='toc'] {
+  @include toc;
+}
+

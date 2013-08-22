@@ -1,3 +1,26 @@
+//   A book consists of different types of sections. We propose to use
+//   DIV elements with these class names:
+
+// frontcover
+// halftitlepage: contains the title of the book
+// titlepage: contains the title of the book, name of author(s) and publisher
+// imprint: left page with copyright, publisher, library printing information
+// dedication: right page with short dedication
+// foreword: written by someone other than the author(s)
+// toc: table of contents
+// preface: preface, including acknowledgements
+// chapter: each chapter is given its own DIV element
+// references: contains list of references
+// appendix: each appendix is given its own
+// bibliography
+// glossary
+// index
+// colophon: describes how the book was produced
+// backcover
+
+// A book will use several of the types listed above, but few books
+// will use all of them.
+
 @page {
   margin: 27mm 16mm 27mm 16mm;
   size: $print_page_width $print_page_height;
@@ -113,3 +136,52 @@
   @top-right { content: normal }
   @bottom-right { content: normal }
 }
+
+div.halftitlepage, div.titlepage, div.imprint, div.dedication { page: blank }
+div.foreword, div.toc, div.preface { page: frontmatter }
+
+/* page breaks */
+
+div.frontcover, div.halftitlepage, div.titlepage { 
+  page-break-before: right ;
+}
+
+div.imprint {
+  page-break-before: always;
+}
+
+div.dedication, div.foreword, div.toc, div.preface, section.chapter, div.reference,
+div.appendix, div.bibliography, div.glossary, div.index, div.colophon, section.chapter {
+  page-break-before: always
+}
+
+div.backcover {
+  page-break-before: left;
+  page: cover;
+  position: absolute;
+  width:  print_page_width;
+  height: print_page_height;
+  left: 0; top: 0;
+  z-index: -1;
+}
+
+div.frontcover {
+  page: cover;
+  @if $vector_cover_image {
+    background-image: $vector_cover_image;
+  }
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-color: $cover_color;
+  background-size: contain;
+  position: absolute;
+  /* background-image-resolution: 275dpi; */
+  width:  $print_page_width;
+  height: $print_page_height;
+  margin: 0px;
+  padding: 0px;
+  left: 0; top: 0;
+  z-index: -1;
+}
+
+div.white_page { page: cover; }

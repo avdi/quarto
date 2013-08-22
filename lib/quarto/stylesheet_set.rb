@@ -26,6 +26,10 @@ module Quarto
     def enhance_build(build)
       add("base.css")
       add("code.css")
+      add("pages.css", targets: [:pdf])
+      add("pdf.css", targets: [:pdf])
+      add("epub2.css", targets: [:epub2])
+      add("epub3.css", targets: [:epub3])
       build.extend(BuildExt)
       build.stylesheets = self
     end
@@ -59,7 +63,8 @@ module Quarto
         master_dir,
       ] do |t|
         if t.source.end_with?(".scss")
-          sh *%W[sass --scss #{t.source} #{t.name}]
+          sh "sass", *sass_load_paths.pathmap("-I%p"),
+             *%W[--scss #{t.source} #{t.name}]
         else
           cp t.source, t.name
         end
@@ -82,7 +87,7 @@ module Quarto
 
     def applicable_to(*targets)
       sheets = @sheets.select{|s| s.applicable_to_targets?(*targets)}
-      self.class.new(sheets)
+      self.class.new(main, sheets)
     end
 
     def generate_stylesheet_for_targets(io, *targets)
@@ -122,15 +127,15 @@ module Quarto
     end
 
     def template_files
-      @sheets.map(&:master_file)
+      FileList[*@sheets.map(&:master_file)]
     end
 
     def source_files
-      @sheets.map(&:source_file)
+      FileList[*@sheets.map(&:source_file)]
     end
 
     def master_files
-      @sheets.map(&:master_file)
+      FileList[*@sheets.map(&:master_file)]
     end
 
     def template_for_source(source_file)
@@ -159,6 +164,10 @@ module Quarto
 
     def main_master_dir
       main.master_dir
+    end
+
+    def sass_load_paths
+      FileList[templates_dir]
     end
   end
 end

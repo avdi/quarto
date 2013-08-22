@@ -1,0 +1,5 @@
+@import "toc";
+
+nav[epub\:type~='toc'] {
+  @include toc;
+}
