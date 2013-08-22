@@ -1,7 +1,12 @@
 require "quarto/plugin"
+require "quarto/uri_helpers"
+require "mime/types"
+require "uri"
 
 module Quarto
   class Prince < Plugin
+    include UriHelpers
+
     module BuildExt
       fattr(:prince)
     end
@@ -91,7 +96,11 @@ module Quarto
       }
       body_elt = doc.root.at_css("body")
       first_child = body_elt.first_element_child
-      first_child.before("<div class='frontcover'></div>")
+      if main.bitmap_cover_image
+        cover_image_uri = data_uri_for_file(main.bitmap_cover_image)
+        first_child.before(
+          "<div class='frontcover'><img src='#{cover_image_uri}'/></div>")
+      end
       first_child.before(File.read(toc_file))
       doc.at_css("#TOC").first_element_child.before("<h1>Table of Contents</h1>")
       doc.css("link[rel='stylesheet']").remove
@@ -100,8 +109,18 @@ module Quarto
           elt["type"] = "text/css"
           elt.content = File.read(stylesheet)
         end)
+      embed_images(doc)
       open(prince_master_file, 'w') do |f|
         doc.write_xml_to(f)
+      end
+    end
+
+    def embed_images(doc)
+      doc.css("img").each do |elt|
+        uri = URI.parse(elt["src"])
+        if !uri.scheme && File.exist?(uri.path)
+          elt["src"] = data_uri_for_file(uri.path)
+        end
       end
     end
   end

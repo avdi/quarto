@@ -371,6 +371,12 @@ module Quarto
 
     def copy_assets(master_file, assets_dir)
       asset_files = []
+      if bitmap_cover_image
+        asset_files << bitmap_cover_image
+      end
+      if vector_cover_image
+        asset_files << vector_cover_image
+      end
       asset_files.concat(extra_asset_files)
       doc = open(master_file) do |f|
         Nokogiri::XML(f)
@@ -381,10 +387,10 @@ module Quarto
         asset_files << asset_path
       end
       asset_files.each do |asset_path|
-        rel_path   = asset_path.relative_path_from(Pathname("."))
+        rel_path   = Pathname(asset_path).relative_path_from(Pathname("."))
         dest       = Pathname(assets_dir) + rel_path
-        mkdir_p dest.dirname
-        ln_sf asset_path.relative_path_from(dest.dirname), dest
+        mkdir_p dest.dirname unless dest.dirname.exist?
+        ln_sf Pathname(asset_path).relative_path_from(dest.dirname), dest
       end
     end
 

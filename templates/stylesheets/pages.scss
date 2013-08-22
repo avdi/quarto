@@ -167,9 +167,6 @@ div.backcover {
 
 div.frontcover {
   page: cover;
-  @if $vector_cover_image {
-    background-image: $vector_cover_image;
-  }
   background-repeat: no-repeat;
   background-position: center center;
   background-color: $cover_color;
@@ -182,6 +179,10 @@ div.frontcover {
   padding: 0px;
   left: 0; top: 0;
   z-index: -1;
+
+  img {
+    width: 100%;
+  }
 }
 
 div.white_page { page: cover; }
