@@ -2,7 +2,7 @@
 
 @namespace epub "http://www.idpf.org/2007/ops";
 
-nav[epub|type~='toc'] {
+nav[epub|type~='toc'], nav[epub\:type~='toc'], #TOC {
   @include toc;
 }
 

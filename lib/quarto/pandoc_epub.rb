@@ -44,6 +44,7 @@ module Quarto
         replace_listings(exploded_epub, main.highlights_dir)
         fix_font_mimetypes("#{exploded_epub}/content.opf")
         add_fallback_styling_classes(exploded_epub)
+        add_class_to_toc("#{exploded_epub}/nav.xhtml")
         target = Pathname(t.name).relative_path_from(Pathname(exploded_epub))
         cd exploded_epub do
           files = FileList["**/*"]
@@ -102,7 +103,7 @@ module Quarto
         end
       end
 
-      rule %r(^#{pandoc_epub_dir}/fonts/.*\.woff$) => [->(f){source_font_for(f)}] do |t|
+      rule %r(^#{pandoc_epub_dir}/fonts/.*\.otf$) => [->(f){source_font_for(f)}] do |t|
         mkdir_p t.name.pathmap("%d") unless File.exist?(t.name.pathmap("%d"))
         convert_font(t.source, t.name)
       end
@@ -231,6 +232,14 @@ module Quarto
       end
     end
 
+    def add_class_to_toc(nav_file)
+      doc = open(nav_file) {|f| Nokogiri::XML(f)}
+      doc.at_css("nav")["class"] = "TOC"
+      open(nav_file, 'w') do |f|
+        doc.write_xml_to(f, save_with: xml_write_options)
+      end
+    end
+
     # The final product
     def epub_file
       "#{main.deliverable_dir}/#{main.name}.epub"
@@ -285,14 +294,14 @@ module Quarto
     end
 
     # Return a list of font file paths where any non-EPUB3-standard
-    # font extensions are replaced with ".woff". See also
+    # font extensions are replaced with ".otf". See also
     # #convert_font.
     def font_files
       orig_files = FileList[*main.fonts.map(&:file)]
       supported, unsupported = orig_files.partition{|f|
-        %W[.otf .woff].include?(f.pathmap("%x"))
+        %W[.otf].include?(f.pathmap("%x"))
       }
-      (supported + unsupported.pathmap("#{pandoc_epub_dir}/fonts/%n.woff"))
+      (supported + unsupported.pathmap("#{pandoc_epub_dir}/fonts/%n.otf"))
     end
 
     def source_font_for(target_font)
@@ -303,7 +312,12 @@ module Quarto
     # While some (many?) readers support TrueType, SVG, etc. fonts,
     # EPUB3 only requires support for WOFF and OpenType. This method
     # uses FontForge (http://fontforge.org/) to convert from arbitrary
-    # font types to WOFF.
+    # font types to OTF.
+    #
+    # Note that while EPUB3 supports both WOFF and OpenType, KF8
+    # supports only TrueType and OpenType. The only common format is
+    # OpenType, and since EPUBs may be used as the source format for
+    # KF8, that's what we target.
     def convert_font(source_font, target_font)
       convert_script = File.expand_path("../../../fontforge/convert.pe", __FILE__)
       sh "fontforge", "-script", convert_script, source_font, target_font
@@ -315,7 +329,7 @@ module Quarto
 
     def fonts
       main.fonts.map{|font|
-        if %W[.otf .woff].include?(font.file.pathmap("%x"))
+        if %W[.otf].include?(font.file.pathmap("%x"))
           font
         else
           font = font.dup
