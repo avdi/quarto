@@ -15,7 +15,7 @@ About the name: "Quarto" is a bookbinding term, and this is my fourth attempt at
 - EPUB3 font embedding.
 - Epubcheck can be incorporated into the production line for automatic validation of generated EPUBs.
 - Mobi (Kindle) output via Kindlegen.
-- When producing EPUB, automatically converts unsupported font types to WOFF using FontForge.
+- When producing EPUB, automatically converts unsupported font types to OpenType using FontForge.
 - Source code highlighting via Pygments, for maximum breadth of language support.
 - Optimized source code highlighting tracks individual listings by SHA1 and only highlights listings that have changed or are new. It also runs multiple highlighting processes in parallel.
 
