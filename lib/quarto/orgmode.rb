@@ -121,6 +121,8 @@ END
               fig_elt.add_child(normal_doc.create_element("figcaption", caption))
             end)
         end
+        normal_doc.css("div.imprint h2").remove
+        normal_doc.css("div.dedication h2").remove
         normalize_document_structure(normal_doc)
         promote_headings(normal_doc)
       end
@@ -129,8 +131,11 @@ END
     def normalize_document_structure(doc)
       chapter_elts = doc.css("div.outline-2")
       chapter_elts.each do |elt|
-        elt.name = "section"
-        elt["class"] = "chapter"
+        classes = elt["class"].to_s.split
+        unless (main.nonchapter_classes & classes).any?
+          elt.name = "section"
+          elt["class"] = "chapter"
+        end
       end
       section_elts = doc.css("div.outline-3")
       section_elts.each do |elt|
@@ -159,7 +164,8 @@ END
       }
 
       promotions.keys.each do |h_tag|
-        doc.css("section.chapter #{h_tag}").each do |heading|
+        doc.css("div.outline-2 #{h_tag}, section.chapter #{h_tag}").each do
+          |heading|
           heading.name = promotions[heading.name]
         end
       end

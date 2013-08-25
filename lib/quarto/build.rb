@@ -72,7 +72,16 @@ module Quarto
     fattr(:fonts)               {[]}
     fattr(:bitmap_cover_image)  { nil }
     fattr(:vector_cover_image)  { nil }
-
+    fattr(:frontmatter_classes) {
+      %W[frontcover halftitlepage titlepage imprint dedication foreword
+         toc preface]
+    }
+    fattr(:backmatter_classes) {
+      %W[references appendix bibliography glossary index colophon backcover]
+    }
+    fattr(:nonchapter_classes) {
+      frontmatter_classes | backmatter_classes
+    }
     def initialize
       use :stylesheet_set
       yield self if block_given?
