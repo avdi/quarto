@@ -129,7 +129,7 @@ module Quarto
     end
 
     def generate_pdf_file(pdf_file, master_file)
-      sh *%W[prince #{master_file} -o #{t.name}]
+      sh *%W[prince #{master_file} -o #{pdf_file}]
     end
   end
 end
