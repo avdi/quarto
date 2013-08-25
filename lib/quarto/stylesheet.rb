@@ -2,6 +2,32 @@ require "quarto/path_helpers"
 require "quarto/uri_helpers"
 require "base64"
 
+# This class manages stylesheets.
+#
+# In a perfect world, we'd have one big stylesheet and all the
+# variances between devices would be managed with media
+# queries. Meanwhile, back on earth, there are three problems with
+# this strategy:
+# 1. Many devices don't understand media queries. Whether this means
+#    they ignore the rules within @media {...} blocks or apply ALL of
+#    them is a big question mark. Other devices only partially support
+#    media queries.
+# 2. Even if they did all understand media queries, there aren't
+#    specific enough queries to account for the diversity of devices
+#    out there. There's no media query (that I know of) for "is this
+#    an e-ink device?", let alone "is this Apple iBooks?".
+# 3. Sometimes the mere presence of an unsupported CSS syntax will
+#    throw software for a loop, or generate warnings. E.g. kindlegen
+#    spits out warnings for every selector it doesn't happen to
+#    support. And I've seen PrinceXML refuse to recognize an entire
+#    rule because ONE of the comma-separated selectors in the rule
+#    contained a namespaced attribute... even though some of the other
+#    comma-separated selectors for the same rule were known to be
+#    recognizable by PrinceXML.
+#
+# The upshot of all this is that for the foreseeable future we're
+# still stuck with generating target-specific stylesheets. That's
+# what this class helps with.
 module Quarto
   class Stylesheet
     include PathHelpers
