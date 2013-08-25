@@ -40,11 +40,14 @@ module Quarto
         task :epub => epub_file
       end
 
-      file epub_file => [exploded_epub] do |t|
+      # This needs to be dependent on a specific file in the unpacked
+      # epub because dependencies on directories are unreliable
+      file epub_file => ["#{exploded_epub}/content.opf"] do |t|
         replace_listings(exploded_epub, main.highlights_dir)
         fix_font_mimetypes("#{exploded_epub}/content.opf")
         add_fallback_styling_classes(exploded_epub)
         add_class_to_toc("#{exploded_epub}/nav.xhtml")
+        add_class_to_cover("#{exploded_epub}/cover.xhtml")
         target = Pathname(t.name).relative_path_from(Pathname(exploded_epub))
         cd exploded_epub do
           files = FileList["**/*"]
@@ -56,7 +59,7 @@ module Quarto
         end
       end
 
-      directory exploded_epub => pristine_epub do |t|
+      file "#{exploded_epub}/content.opf" => pristine_epub do |t|
         rm_rf exploded_epub if File.exist?(exploded_epub)
         mkdir_p exploded_epub
         sh *%W[unzip #{pristine_epub} -d #{exploded_epub}]
@@ -244,6 +247,14 @@ module Quarto
       doc = open(nav_file) {|f| Nokogiri::XML(f)}
       doc.at_css("nav")["id"] = "TOC"
       open(nav_file, 'w') do |f|
+        doc.write_xml_to(f, save_with: xml_write_options)
+      end
+    end
+
+    def add_class_to_cover(cover_file)
+      doc = open(cover_file) {|f| Nokogiri::XML(f)}
+      doc.at_css("#cover-image")["class"] = "frontcover"
+      open(cover_file, 'w') do |f|
         doc.write_xml_to(f, save_with: xml_write_options)
       end
     end
