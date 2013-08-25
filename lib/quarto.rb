@@ -1,6 +1,7 @@
 require "quarto/version"
 require "quarto/build"
 require "quarto/plugin"
+require "dotenv"
 
 module Quarto
   def self.build
@@ -27,6 +28,7 @@ module Quarto
   end
 
   def self.configure
+    load_environment
     yield build
     build.finalize
     build.define_tasks
@@ -40,5 +42,9 @@ module Quarto
 
   def self.reset
     @build         = nil
+  end
+
+  def self.load_environment
+    Dotenv.load
   end
 end

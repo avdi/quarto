@@ -1,13 +1,23 @@
 require "quarto/prince"
 require "doc_raptor"
+require "netrc"
 
 module Quarto
   class DocRaptor < Prince
     private
 
+    MISSING_API_KEY_MESSAGE =
+      "Please set DOCRAPTOR_API_KEY env var or add docraptor.com to .netrc"
+
     def generate_pdf_file(pdf_file, master_file)
       test_mode = ENV["QUARTO_ENV"] == "production" ? false : true
+      api_key   = ENV.fetch("DOCRAPTOR_API_KEY") {
+        username, password = Netrc.read["docraptor.com"]
+        username or fail MISSING_API_KEY_MESSAGE
+      }
       puts "create #{pdf_file} using DocRaptor (test: #{test_mode})"
+      # global data == yuck :-(
+      ::DocRaptor.api_key api_key
       ::DocRaptor.create(
         document_content: File.read(master_file),
         name: master_file.pathmap("%f"),
