@@ -10,3 +10,62 @@
 
   @include toc;
 }
+
+@media print {
+  html, p {
+    font-size: 12pt;
+  }
+  h1 {
+    page-break-before: right;
+  }
+  h2 {
+    page-break-before: always;
+  }
+  h3 {
+    font-size: 12pt;
+  }
+  .sidebar {
+    font-size: 10pt;
+    pre {
+      font-size: 10pt;
+    }
+  }
+  .footnote {
+    font-size: 9pt;
+    code, pre {
+      font-size: 10pt;
+    }
+  }
+
+  a.footnote {
+    font-size: 9pt;
+  }
+  div.frontcover img {
+    position: absolute;
+    width:  $print_page_width;
+    height: $print_page_height;
+  }
+  div.frontcover h1 {
+    position: absolute;
+    left: 2cm; top: 1cm;
+    font-size: 44pt;
+  }
+  div.frontcover h2 {
+    position: absolute;
+    right: 0; top: 5cm;
+    font-size: 16pt;
+  }
+  div.frontcover h3 {
+    position: absolute;
+    left: 2cm; top: 7cm;
+    font-size: 24pt;
+  }
+  div.frontcover p {
+    position: absolute;
+    left: 2cm; bottom: 1.5cm;
+    font-size: 24pt;
+  }
+  pre {
+    font-size: 10pt;
+  }
+}

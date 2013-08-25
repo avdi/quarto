@@ -10,9 +10,6 @@ html {
 html, p {
   font-family: $font, serif;
   line-height: 1.4;
-  @media print {
-    font-size: 12pt;
-  }
 }
 
 body {
@@ -35,35 +32,25 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  @media print {
-    page-break-before: right;
-  }
-  @media screen {
-    page-break-before: always;
-  }
   padding: 0.5em 0 0.5em 0;
   margin: 0;
   margin-top: 10ex;
   font-weight: 900;
   text-align: right;
-  border-bottom: 1pt solid lighten($heading_color, 50%);
+  border-bottom: 1pt solid lighten($heading_color, 40%);
 }
 
 h2 {
-  page-break-before: always;
   text-align: left;
   font-weight: bold;
 }
 
 h3 {
   font-weight: normal;
-  @media print {
-    font-size: 12pt;
-  }
   font-style: normal;
   margin-bottom: 0;
   padding-bottom: 0;
-  color: lighten($heading_color, 50%);
+  color: lighten($heading_color, 40%);
 }
 
 h3 + div p:first-of-type, .first-para-after-h3 {
@@ -177,9 +164,6 @@ figure {
   clear: right;
   /* margin: 0 3em 1em -20%; */
   margin: 0 1.5em 1em 1em;
-  @media print {
-    font-size: 10pt;
-  }
   width: 40%;
   border-left: thin solid black;
   text-align: justify;
@@ -196,9 +180,6 @@ figure {
   }
 
   pre {
-    @media print {
-      font-size: 10pt;
-    }
   }
 
   .sidebar-body {
@@ -285,25 +266,16 @@ table.lined td, table.lined th {
   footnote-style-position: inside;
   counter-increment: footnote;
   //  margin-left: 1.4em;
-  @media print {
-    font-size: 9pt;
-  }
   line-height: 1.4;
 }
 
 a.footnote {
   display: inline;
   margin-left: 0em;
-  @media print {
-    font-size: 9pt;
-  }
   line-height: 1;
 }
 
 .footnote code, .footnote pre {
-  @media print {
-    font-size: 10pt;
-  }
 }
 
 .footnote::footnote-call {
@@ -318,31 +290,16 @@ a.footnote {
 }
 
 div.frontcover img {
-  @media print {
-    position: absolute;
-    width:  $print_page_width;
-    height: $print_page_height;
-  }
   left: 0; top: 0;
   z-index: -1;
 }
 
 div.frontcover h1 {
   color: white;
-  @media print {
-    position: absolute;
-    left: 2cm; top: 1cm;
-    font-size: 44pt;
-  }
   font-weight: normal;
 }
 
 div.frontcover h2 {
-  @media print {
-    position: absolute;
-    right: 0; top: 5cm;
-    font-size: 16pt;
-  }
   color: black;
   background: white;
   font-weight: normal;
@@ -351,21 +308,11 @@ div.frontcover h2 {
 }
 
 div.frontcover h3 {
-  @media print {
-    position: absolute;
-    left: 2cm; top: 7cm;
-    font-size: 24pt;
-  }
   color: white;
   font-weight: normal;
 }
 
 div.frontcover p {
-  @media print {
-    position: absolute;
-    left: 2cm; bottom: 1.5cm;
-    font-size: 24pt;
-  }
   color: black;
   font-weight: bold;
   text-transform: uppercase;
@@ -418,7 +365,7 @@ section.chapter h1 { string-set: header "Chapter " counter(chapter) ": " content
 section.chapter h2 { counter-increment: section; counter-reset: sample; }
 
 section.chapter h2::before {
-  color: lighten($heading_color, 50%);
+  color: lighten($heading_color, 40%);
   content: counter(chapter) "." counter(section) " "; 
 }
 
@@ -452,13 +399,12 @@ span.element, span.attribute {
 span.property { font-weight: bold }
 pre, code, span.css, span.value, span.declaration {
   color: $heading_color;
-  font-family: "Source Code Pro", "Inconsolata", "Anonymous Pro", "DejaVu Sans Mono", "Lucida Console", "Lucida Sans Typewriter", monospace;
+  font-family: "Source Code Pro", "Inconsolata", "Anonymous Pro", 
+    "DejaVu Sans Mono", "Lucida Console", "Lucida Sans Typewriter", monospace;
 }
 
 pre {
-  @media print {
-    font-size: 10pt;
-  }
+  font-size: 80%;
   page-break-inside: avoid;
 }
 
@@ -478,11 +424,19 @@ div.imprint {
     margin-right: 25px;
     text-align: center;
   }
+
+  p {
+    text-align: center;
+    font-size: 75%;
+  }
+}
+
+.dedication p {
+  text-align: center;
+  font-style: italic;
 }
 
 @media screen, handheld {
-  html { margin: 1em; font: 14px $font, sans-serif; }
-  h1 { margin-bottom: 0.5em }
   div.frontcover, div.halftitlepage, div.titlepage, div.imprint,
   div.dedication, div.foreword, div.toc, div.index { display: none }
 }

@@ -138,7 +138,7 @@
 }
 
 div.halftitlepage, div.titlepage, div.imprint, div.dedication { page: blank }
-div.foreword, div.toc, div.preface { page: frontmatter }
+div.foreword, div.toc, #TOC, div.preface { page: frontmatter }
 
 /* page breaks */
 
