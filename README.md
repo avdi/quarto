@@ -33,13 +33,10 @@ Quarto depends on several external programs which you will need to install befor
 
 ## Getting Started
 
-1. Install the gem (`gem install quarto`)
-2. Create a `Rakefile` in your book project root, with the following content:
-    ```ruby
-    require 'quarto/tasks'
-    ```
+1. Install the gem: `gem install quarto`.
+2. Create a `Rakefile` in your book project root, with the following content: `require quarto/tasks`.
 3. Run `rake -T` to see the available tasks.
-4. The task you care about is probably `rake deliverables`. (This is    also the default)
+4. The task you care about is probably `rake deliverables`. (This is also the default)
 
 ## Concepts
 
