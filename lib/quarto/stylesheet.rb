@@ -1,6 +1,7 @@
 require "quarto/path_helpers"
 require "quarto/uri_helpers"
 require "base64"
+require "naught"
 
 # This class manages stylesheets.
 #

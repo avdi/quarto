@@ -7,6 +7,14 @@ module Quarto
 
     module BuildExt
       fattr(:stylesheets)
+      def clear_stylesheets
+        stylesheets.remove_masters_from(all_master_files)
+        stylesheets.clear
+      end
+    end
+
+    NullStylesheet = Naught.build do |config|
+      config.mimic Stylesheet
     end
 
     fattr(:font)                { 'serif' }
@@ -85,6 +93,16 @@ module Quarto
       @sheets << Stylesheet.new(self, *args)
     end
 
+    def clear
+      @sheets.clear
+    end
+
+    def remove_masters_from(list)
+      master_files.each do |mf|
+        list.delete(mf)
+      end
+    end
+
     def applicable_to(*targets)
       sheets = @sheets.select{|s| s.applicable_to_targets?(*targets)}
       self.class.new(main, sheets)
@@ -139,11 +157,15 @@ module Quarto
     end
 
     def template_for_source(source_file)
-      @sheets.detect{|s| s.source_file == source_file}.template_file
+      @sheets.detect(NullStylesheet.method(:new)){
+        |s| s.source_file == source_file
+      }.template_file
     end
 
     def source_for_master(master_file)
-      @sheets.detect{|s| s.master_file == master_file}.source_file
+      @sheets.detect(NullStylesheet.method(:new)){
+        |s| s.master_file == master_file
+      }.source_file
     end
 
     def var_file

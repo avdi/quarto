@@ -9,6 +9,7 @@ require 'time'
 require 'erb'
 require 'quarto/font'
 require 'quarto/stylesheet_set'
+require "pathname"
 
 module Quarto
   class Build
@@ -82,6 +83,10 @@ module Quarto
     fattr(:nonchapter_classes) {
       frontmatter_classes | backmatter_classes
     }
+    fattr(:build_dir) {
+      "build"
+    }
+    fattr(:configured) { false }
     def initialize
       use :stylesheet_set
       yield self if block_given?
@@ -131,10 +136,6 @@ module Quarto
       authors.join(", ")
     end
 
-    def build_dir
-      "build"
-    end
-
     def source_exts
       extensions_to_source_formats.keys
     end
@@ -145,13 +146,13 @@ module Quarto
     end
 
     def source_files
-      @source_files ||= FileList.new("**/*.{#{source_exts.join(',')}}") do |files|
+      @source_files ||= FileList.new do |files|
         files.exclude(*source_exclusions)
       end
     end
 
     def export_dir
-      "build/exports"
+      "#{build_dir}/exports"
     end
 
     def export_files
@@ -170,7 +171,7 @@ module Quarto
     end
 
     def section_dir
-      "build/sections"
+      "#{build_dir}/sections"
     end
 
     def section_files
@@ -210,11 +211,11 @@ module Quarto
     end
 
     def source_list_file
-      "build/sources"
+      "#{build_dir}/sources"
     end
 
     def spine_file
-      "build/spine.xhtml"
+      "#{build_dir}/spine.xhtml"
     end
 
     def create_spine_file(spine_file, section_files, options={})
@@ -276,7 +277,7 @@ module Quarto
     end
 
     def codex_file
-      "build/codex.xhtml"
+      "#{build_dir}/codex.xhtml"
     end
 
     def create_codex_file(codex_file, spine_file)
@@ -351,14 +352,15 @@ module Quarto
     # Strip extraneous whitespace from around a code listing
     def strip_listing(code)
       code = code.dup
-      code.strip!
       code.gsub!(/\t/, "  ")
-      lines  = code.split("\n")
+      lines           = code.split("\n")
       first_code_line = lines.index{|l| l =~ /\S/}
       last_code_line  = lines.rindex{|l| l =~ /\S/}
-      lines = lines[first_code_line..last_code_line]
-      indent = lines.map{|l| l.index(/[^ ]/) || 0}.min
-      lines.map{|l| l[indent..-1]}.join("\n")
+      code_lines      = lines[first_code_line..last_code_line]
+      line_indents    = code_lines.map{|l| l.index(/\S/) || 0}
+      min_indent      = line_indents.min
+      unindented_code = code_lines.map{|l| l[min_indent..-1]}.join("\n")
+      unindented_code.strip
     end
 
     def master_file

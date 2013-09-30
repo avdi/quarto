@@ -10,6 +10,8 @@ module Quarto
     ORG_EXPORT_ELISP     = <<END
 (progn
   (setq org-html-htmlize-output-type 'css)
+  (setq org-babel-noweb-wrap-start "#<<")
+  (setq org-babel-noweb-wrap-end ">>")
   (org-mode)
   (message (concat "Org version: " org-version))
   (cd "<%= main.export_dir %>")
@@ -114,11 +116,14 @@ END
         end
         figure_elts = normal_doc.css("div.figure")
         figure_elts.each do |elt|
-          img_elt = elt.css("img")
-          caption = elt.at_css("p:nth-child(2)").content
+          img_elt     = elt.css("img")
+          caption_elt = elt.at_css("p:nth-child(2)")
+          caption     = caption_elt && caption_elt.content
           elt.replace(normal_doc.create_element("figure") do |fig_elt|
               fig_elt.add_child(img_elt)
-              fig_elt.add_child(normal_doc.create_element("figcaption", caption))
+              if caption
+                fig_elt.add_child(normal_doc.create_element("figcaption", caption))
+              end
             end)
         end
         normal_doc.css("div.imprint h2").remove

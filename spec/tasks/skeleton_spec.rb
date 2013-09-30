@@ -54,12 +54,12 @@ END
   }
 
   And {
-    expect(contents("build/listings/3361c5f02e08bd44bde2d42633a2c9be201f7ec4.rb")).to eq(<<END)
+    expect(contents("build/listings/3361c5f02e08bd44bde2d42633a2c9be201f7ec4.rb")).to eq(<<END.strip)
 puts "hello, world"
 END
   }
   And {
-    expect(contents("build/listings/e7b17ea0eeebbd00d08674cf9070d287e24dc68e.c")).to eq(<<END)
+    expect(contents("build/listings/e7b17ea0eeebbd00d08674cf9070d287e24dc68e.c")).to eq(<<END.strip)
 int main(int argc, char** argv) {
   printf("Hello, world\n")
 }

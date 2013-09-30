@@ -37,12 +37,14 @@ module TaskSpecHelpers
 
   def within_zip(zip_file)
     zip_file = Pathname(zip_file)
+    raise "Zip file not found: #{zip_file}" unless zip_file.exist?
     base = zip_file.basename
     dir  = Pathname("../../tmp/unzip").expand_path(__FILE__)
     rm_rf(dir) if dir.exist?
     unzip_dir = dir + zip_file.basename(".*")
     mkdir_p unzip_dir
-    system(*%W[unzip -qq #{zip_file} -d #{unzip_dir}])
+    unzip_succeeded = system(*%W[unzip -qq #{zip_file} -d #{unzip_dir}])
+    raise "Could not unzip #{zip_file}" unless unzip_succeeded
     Dir.chdir(unzip_dir) do
       yield(unzip_dir)
     end

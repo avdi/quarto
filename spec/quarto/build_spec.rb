@@ -255,7 +255,7 @@ END
 END
       }
       Then{
-        expect(build.strip_listing(code)).to eq(<<END)
+        expect(build.strip_listing(code)).to eq(<<END.strip)
 puts "hello, world
 if true
   puts "goodbye, world

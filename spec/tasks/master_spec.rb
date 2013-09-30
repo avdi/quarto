@@ -4,9 +4,10 @@ require 'open3'
 describe 'master task', task: true do
   Given {
     @construct.file "Rakefile", <<END
-require 'quarto/tasks'
+require 'quarto'
 Quarto.configure do |config|
-  config.stylesheets.clear
+  config.clear_stylesheets
+  config.use :markdown
   config.metadata = false
 end
 END
@@ -34,7 +35,7 @@ END
   }
 
   When {
-    run "rake master"
+    run "rake master --trace --rules"
   }
 
   Then {

@@ -29,7 +29,7 @@ EOF
     }
 
     Then {
-      within_zip("build/deliverables/book.epub") do |dir|
+      within_zip("build/deliverables/untitled-book.epub") do |dir|
         expect(contents("mimetype")).to eq("application/epub+zip")
         expect(dir + "content.opf").to exist
         expect(dir + "META-INF").to exist

@@ -72,7 +72,7 @@ module Quarto
         stylesheet,
         metadata_file,
         *font_files
-      ] do |t|
+      ].compact do |t|
         create_epub_file(
           t.name,
           main.master_file,
@@ -252,6 +252,10 @@ module Quarto
     end
 
     def add_class_to_cover(cover_file)
+      if !File.exist?(cover_file)
+        warn "Cover file not found: #{cover_file}"
+        return
+      end
       doc = open(cover_file) {|f| Nokogiri::XML(f)}
       doc.at_css("#cover-image")["class"] = "frontcover"
       open(cover_file, 'w') do |f|

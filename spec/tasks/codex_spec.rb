@@ -80,6 +80,7 @@ END
     <meta name="DC.description" content="The greatest book ever written"/>
     <meta name="DC.date" content="2013-08-01"/>
     <meta name="DC.language" content="en-US"/>
+    <meta name="DC.rights" content="Copyright &#xA9; 2013 Avdi Grimm"/>
   </head>
   <body>
     <h1 id="hello-world">Hello, world</h1>
