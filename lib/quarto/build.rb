@@ -195,7 +195,7 @@ module Quarto
       normal_doc = Nokogiri::XML.parse(SECTION_TEMPLATE)
       body_elt        = normal_doc.at_css("body")
       export_body_elt = doc.at_css("body")
-      if export_body_elt
+      if body_has_meaningful_content?(export_body_elt)
         body_elt.replace(export_body_elt)
       else
         body_elt.add_child(
@@ -208,6 +208,16 @@ module Quarto
           normal_doc.write_xml_to(pipe_input)
         end
       end
+    end
+
+    # At some point I stopped getting missing body elements for blank
+    # markdown documents, and started getting a body element with a
+    # single empty P tag instead. I'm not sure if this was a change in
+    # Pandoc, a change in libxml2, or something else. I don't really
+    # care either; this helper handles both the missing element and
+    # the boilerplate cases.
+    def body_has_meaningful_content?(body_elt)
+      body_elt && body_elt.to_s != "<body><p></p></body>"
     end
 
     def source_list_file
