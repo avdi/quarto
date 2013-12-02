@@ -28,10 +28,10 @@ directory "vendor/org-#{ORG_VERSION}" => "vendor/org-#{ORG_VERSION}.tar.gz" do |
   end
 end
 
-file "vendor/org-#{ORG_VERSION}.tar.gz" => "vendor" do |t|
+file "vendor/org-#{ORG_VERSION}.tar.gz" => "vendor/org" do |t|
   cd "vendor" do
     sh "wget http://orgmode.org/org-#{ORG_VERSION}.tar.gz"
   end
 end
 
-directory "vendor"
+directory "vendor/org"
