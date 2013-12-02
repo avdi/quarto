@@ -16,6 +16,7 @@ task :spec           => :vendor_orgmode
 task :vendor_orgmode => VENDOR_ORG_MODE_DIR
 
 file VENDOR_ORG_MODE_DIR => "vendor/org-#{ORG_VERSION}" do |t|
+  mkdir_p File.expand_path("..", VENDOR_ORG_MODE_DIR)
   ln_sf File.expand_path("vendor/org-#{ORG_VERSION}"), VENDOR_ORG_MODE_DIR
 end
 
