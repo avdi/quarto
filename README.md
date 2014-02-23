@@ -4,6 +4,12 @@ Yet another ebook generation toolchain, biased towards writing books about progr
 
 About the name: "Quarto" is a bookbinding term, and this is my fourth attempt at a reusable ebook toolchain.
 
+## Important Note
+
+Development on Quarto will necessarily occur in fits and starts, because I'll only be working on it actively while I'm writing a book.
+
+It is also very, very unsupported. Right now it exists to solve *my* problems... barely. If it solves your problems too that's fantastic, but I don't have time to help you get it working. Sorry!
+
 ## Notable Features
 
 - Accept either Markdown or Org-Mode input files.
@@ -14,7 +20,7 @@ About the name: "Quarto" is a bookbinding term, and this is my fourth attempt at
 - EPUB3 output via Pandoc.
 - EPUB3 font embedding.
 - Epubcheck can be incorporated into the production line for automatic validation of generated EPUBs.
-- Mobi (Kindle) output via Kindlegen.
+- Mobi (Kindle) output via Kindlegen. *Note:* according to the Kindlegen terms of service, the resulting output can only be sold in the Amazon store.
 - When producing EPUB, automatically converts unsupported font types to OpenType using FontForge.
 - Source code highlighting via Pygments, for maximum breadth of language support.
 - Optimized source code highlighting tracks individual listings by SHA1 and only highlights listings that have changed or are new. It also runs multiple highlighting processes in parallel.
