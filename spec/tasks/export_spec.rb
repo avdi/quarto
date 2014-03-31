@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'open3'
 
-describe 'export task', task: true do
+describe 'export task', task: true, test_construct: true do
   Given {
     @construct.file "Rakefile", <<"END"
 require 'quarto/tasks'

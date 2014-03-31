@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'open3'
 
-describe 'skeleton task', task: true do
+describe 'skeleton task', task: true, test_construct: true do
   Given {
     @construct.file "Rakefile", <<END
 require 'quarto/tasks'

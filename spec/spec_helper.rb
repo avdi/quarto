@@ -14,7 +14,7 @@ rescue LoadError
 end
 
 require "rspec/given"
-require "construct"
+require "test_construct/rspec_integration"
 require "nokogiri"
 
 module TaskSpecHelpers
@@ -58,14 +58,25 @@ module TaskSpecHelpers
   end
 end
 
-RSpec.configure do |config|
-  config.include Construct::Helpers
-  config.include TaskSpecHelpers, task: true
 
-  config.around :each do |example|
-    within_construct do |c|
-      @construct = c
-      example.run
+RSpec.configure do |config|
+  config.include TaskSpecHelpers, task: true
+  config.before :each do |example|
+    example.metadata[:test_construct] = true
+  end
+
+
+  config.after :each, task: true do |example|
+    if example.exception
+      puts "=== Task Output ==="
+      puts @output
+      puts "=== End Task Output ==="
     end
   end
+
+  config.before :each do |example|
+    @construct = example.metadata[:construct]
+  end
+
+
 end

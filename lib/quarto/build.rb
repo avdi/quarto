@@ -233,7 +233,7 @@ module Quarto
         stylesheets: stylesheets,
         metadata:    metadata
       }.merge(options)
-      say("create #{spine_file}")
+      say("create #{spine_file} from sections: #{section_files}")
       doc = Nokogiri::XML.parse(SPINE_TEMPLATE)
       doc.root.at_css("title").content = title
       add_metadata_to_doc(doc) if options[:metadata]

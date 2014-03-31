@@ -21,7 +21,7 @@ module Quarto
     }
 
     def enhance_build(build)
-      build.deliverable_files << pdf_file
+      build.deliverable_files << standalone_pdf_file
       build.extend(BuildExt)
       build.prince = self
     end
@@ -33,16 +33,26 @@ module Quarto
       task :pdf => :"prince:pdf"
 
       namespace :prince do
-        task :pdf => pdf_file
+        task :pdf => pdf_files
       end
 
-      file pdf_file => [prince_master_file] do |t|
+      file standalone_pdf_file => [prince_master_file] do |t|
         mkdir_p t.name.pathmap("%d")
-        generate_pdf_file(pdf_file, prince_master_file)
+        generate_pdf_file(standalone_pdf_file, prince_master_file)
+      end
+
+      file interior_pdf_file => [prince_interior_master_file] do |t|
+        mkdir_p t.name.pathmap("%d")
+        generate_pdf_file(interior_pdf_file, prince_interior_master_file)
       end
 
       file prince_master_file => [main.master_file, main.assets_file, toc_file, stylesheet] do |t|
-        create_prince_master_file(prince_master_file, main.master_file, stylesheet)
+        create_prince_master_file(prince_master_file,main.master_file, stylesheet, cover: true)
+      end
+
+      file prince_interior_master_file =>
+        [main.master_file, main.assets_file, toc_file, stylesheet] do |t|
+        create_prince_master_file(prince_interior_master_file, main.master_file, stylesheet, cover: false)
       end
 
       file toc_file => [main.master_file, prince_dir] do |t|
@@ -68,12 +78,24 @@ module Quarto
       directory prince_dir
     end
 
-    def pdf_file
+    def pdf_files
+      [standalone_pdf_file, interior_pdf_file]
+    end
+
+    def standalone_pdf_file
       "#{main.deliverable_dir}/#{main.name}.pdf"
+    end
+
+    def interior_pdf_file
+      "#{main.deliverable_dir}/#{main.name}-interior.pdf"
     end
 
     def prince_master_file
       "#{main.master_dir}/prince_master.xhtml"
+    end
+
+    def prince_interior_master_file
+      "#{main.master_dir}/prince_interior_master.xhtml"
     end
 
     def toc_file
@@ -96,14 +118,14 @@ module Quarto
       "#{main.build_dir}/prince"
     end
 
-    def create_prince_master_file(prince_master_file, master_file, stylesheet)
+    def create_prince_master_file(prince_master_file, master_file, stylesheet, options={})
       puts "create #{prince_master_file} from #{master_file}"
       doc = open(master_file) { |f|
         Nokogiri::XML(f)
       }
       body_elt = doc.root.at_css("body")
       first_child = body_elt.first_element_child
-      if main.bitmap_cover_image
+      if options.fetch(:cover){true} && main.bitmap_cover_image
         cover_image_uri = data_uri_for_file(main.bitmap_cover_image)
         first_child.before(
           "<div class='frontcover'><img src='#{cover_image_uri}'/></div>")

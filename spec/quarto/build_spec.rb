@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'quarto/build'
 
 module Quarto
-  describe Build do
+  describe Build, test_construct: true do
     Given(:build) {
       Quarto::Build.new do |b|
         b.use :git

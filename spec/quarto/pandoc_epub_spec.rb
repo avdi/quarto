@@ -6,7 +6,7 @@ module Quarto
 
   end
 
-  describe "pandoc_epub:epub", task: true do
+  describe "pandoc_epub:epub", task: true, test_construct: true do
     Given {
       @construct.file "Rakefile", <<EOF
 require "quarto"

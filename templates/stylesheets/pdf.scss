@@ -68,4 +68,12 @@
   pre {
     font-size: 10pt;
   }
+
+  .chapter a[href]::after {
+    content: " [page " target-counter(attr(href), page) "]"
+  }
+  
+  a {
+    color: inherit;
+  }
 }
