@@ -9,6 +9,9 @@ module Quarto
 
     module BuildExt
       fattr(:prince)
+      def standalone_pdf_file
+        prince.standalone_pdf_file
+      end
     end
 
     fattr(:cover_image)
