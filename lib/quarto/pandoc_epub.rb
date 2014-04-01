@@ -10,6 +10,10 @@ module Quarto
       extend Forwardable
 
       attr_accessor :pandoc_epub
+
+      def epub_file
+        pandoc_epub.epub_file
+      end
     end
 
     fattr(:target) { :epub3 }
@@ -112,6 +116,11 @@ module Quarto
       end
 
       directory pandoc_epub_dir
+    end
+
+    # The final product
+    def epub_file
+      "#{main.deliverable_dir}/#{main.name}.epub"
     end
 
     private
@@ -261,11 +270,6 @@ module Quarto
       open(cover_file, 'w') do |f|
         doc.write_xml_to(f, save_with: xml_write_options)
       end
-    end
-
-    # The final product
-    def epub_file
-      "#{main.deliverable_dir}/#{main.name}.epub"
     end
 
     def stylesheet
