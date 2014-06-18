@@ -551,7 +551,7 @@ module Quarto
         end
       end
 
-      file spine_file => [build_dir] do |t|
+      file spine_file => [build_dir, *section_files] do |t|
         create_spine_file(t.name, section_files, stylesheets: stylesheets)
       end
 
