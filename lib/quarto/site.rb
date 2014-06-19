@@ -10,6 +10,8 @@ module Quarto
       attr_accessor :site
     end
 
+    ExpansionContext = Struct.new(:build)
+
     attr_reader :bower_deps
 
     def initialize(*)
@@ -35,7 +37,6 @@ module Quarto
 
         site_template_files.each do |source|
           generate_deps_for_template(source) do |output_file, input_file|
-            p(output_file => input_file)
             file output_file => input_file do
               expand_template(input_file, output_file)
             end
@@ -44,13 +45,16 @@ module Quarto
 
         namespace :bower do
           desc "Install Bower dependencies"
-          task :install do
+          task :install => [bower_config_file, bower_package_file] do
             bower_deps.each do |dep|
               cd site_dir do
-                sh "bower install #{dep}"
+                sh "bower install -S #{dep}"
               end
             end
           end
+
+          template_file rel_path(bower_config_file, "build")
+          template_file rel_path(bower_package_file, "build")
         end
       end
     end
@@ -63,16 +67,14 @@ module Quarto
       "#{main.build_dir}/site"
     end
 
-    def site_template_dir
-      "#{main.template_dir}/site"
-    end
+    fattr(:site_template_dir) { "#{main.template_dir}/site" }
 
     def site_files
       site_template_files.map{|f| site_file_for_template_file(f)}
     end
 
     def site_template_files
-      starts_with_noise = /^[^[:alnum:]]/
+      starts_with_noise = /^[^\.[:alnum:]]/
       ends_with_noise   = /[^[:alnum:]]$/
       FileList["#{site_template_dir}/**/*"].
         exclude(starts_with_noise, ends_with_noise)
@@ -84,14 +86,57 @@ module Quarto
       "#{site_dir}/#{filename}"
     end
 
+    def bower_config_file
+      "#{site_dir}/.bowerrc"
+    end
+
+    def bower_package_file
+      "#{site_dir}/bower.json"
+    end
+
     def pop_ext(file)
       file[0...file.rindex(".")]
     end
 
     def has_final_ext?(filename)
-      ext = filename.pathmap("%x")[1..-1].downcase
-      ext == "html" || !Tilt.registered?(ext)
+      ext = filename.pathmap("%x")[1..-1].to_s.downcase
+      ext.empty? || ext == "html" || !Tilt.registered?(ext)
     end
+
+    def template_file(base_path)
+      rel_dir              = base_path.pathmap("%d")
+      user_template_path   = user_template_for(base_path)
+      system_template_path = system_template_for(base_path)
+
+      unless user_template_path
+        template_filename  = system_template_path.pathmap("%f")
+        user_template_path = clean_path("#{main.template_dir}/#{rel_dir}/#{template_filename}")
+        file user_template_path => system_template_path do
+          cp system_template_path, user_template_path
+        end
+      end
+
+      generate_deps_for_template(user_template_path) do
+        |output_file, input_file|
+        file output_file => input_file do
+          expand_template(input_file, output_file)
+        end
+      end
+    end
+
+    def user_template_for(base_path)
+      template_for(base_path, main.template_dir)
+    end
+
+    def system_template_for(base_path)
+      template_for(base_path, main.system_template_dir)
+    end
+
+    def template_for(base_path, root)
+      FileList["#{root}/#{base_path}",
+               "#{root}/#{base_path}.*"].existing.first
+    end
+
 
     def generate_deps_for_template(template_file)
       dir             = main.template_dir
@@ -117,8 +162,10 @@ module Quarto
         cp input_file, output_file
       else
         say "expand #{input_file} -> #{output_file}"
+        p main.name
+        context         = ExpansionContext.new(main)
         template        = Tilt.new(input_file)
-        output          = template.render(self)
+        output          = template.render(context)
         File.write(output_file, output)
       end
     end

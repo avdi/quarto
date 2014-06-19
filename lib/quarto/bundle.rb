@@ -8,6 +8,7 @@ module Quarto
 
       task :deliverables => :bundle
 
+
       file bundle_file => main.deliverable_files do |t|
         cd main.deliverable_dir do
           sh "zip -r #{t.name.pathmap("%f")} #{main.deliverable_files.pathmap('%f')}"

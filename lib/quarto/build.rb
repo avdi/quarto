@@ -178,6 +178,10 @@ module Quarto
       "#{build_dir}/template_expansions"
     end
 
+    def system_template_dir
+      File.expand_path("../../../templates", __FILE__)
+    end
+
     def section_dir
       "#{build_dir}/sections"
     end
