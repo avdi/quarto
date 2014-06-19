@@ -43,6 +43,14 @@ module Quarto
           end
         end
 
+        file toc_partial => [
+          main.fascicle_manifest,
+          template_path(fascicle_template),
+          template_path(main_layout)] do
+
+          generate_fascicle_pages(main.fascicle_manifest, toc_partial)
+        end
+
         namespace :bower do
           desc "Install Bower dependencies"
           task :install => [bower_config_file, bower_package_file] do
@@ -55,6 +63,8 @@ module Quarto
 
           template_file rel_path(bower_config_file, "build")
           template_file rel_path(bower_package_file, "build")
+          template_file fascicle_template
+          template_file main_layout
         end
       end
     end
@@ -70,14 +80,25 @@ module Quarto
     fattr(:site_template_dir) { "#{main.template_dir}/site" }
 
     def site_files
-      site_template_files.map{|f| site_file_for_template_file(f)}
+      site_template_files.map{|f| site_file_for_template_file(f)} + [toc_partial]
     end
 
     def site_template_files
       starts_with_noise = /^[^\.[:alnum:]]/
       ends_with_noise   = /[^[:alnum:]]$/
-      FileList["#{site_template_dir}/**/*"].
-        exclude(starts_with_noise, ends_with_noise)
+      FileList["#{site_template_dir}/**/*"].exclude do |path|
+        File.directory?(path) ||
+        path.pathmap("%f") =~ starts_with_noise ||
+          path.pathmap("%f") =~ ends_with_noise
+      end
+    end
+
+    def site_fascicle_dir
+      "#{site_dir}/fascicles"
+    end
+
+    def toc_partial
+      "#{site_template_dir}/_toc.html"
     end
 
     def site_file_for_template_file(filename)
@@ -106,12 +127,14 @@ module Quarto
     def template_file(base_path)
       rel_dir              = base_path.pathmap("%d")
       user_template_path   = user_template_for(base_path)
-      system_template_path = system_template_for(base_path)
+      system_template_path = system_template_for(base_path) or
+        fail "No system template found for #{base_path}"
 
       unless user_template_path
-        template_filename  = system_template_path.pathmap("%f")
-        user_template_path = clean_path("#{main.template_dir}/#{rel_dir}/#{template_filename}")
+        user_template_path =
+          user_template_path_for_system_template_path(system_template_path)
         file user_template_path => system_template_path do
+          mkdir user_template_path.pathmap("%d")
           cp system_template_path, user_template_path
         end
       end
@@ -137,7 +160,6 @@ module Quarto
                "#{root}/#{base_path}.*"].existing.first
     end
 
-
     def generate_deps_for_template(template_file)
       dir             = main.template_dir
       rel_dir         = rel_path(template_file, dir).pathmap("%d")
@@ -156,18 +178,88 @@ module Quarto
       yield(final_path, input_path)
     end
 
-    def expand_template(input_file, output_file)
+    def expand_template(input_file, output_file, layout_file: nil, locals: {}, &block)
       mkpath(output_file.pathmap("%d"))
       if has_final_ext?(input_file)
         cp input_file, output_file
       else
         say "expand #{input_file} -> #{output_file}"
-        p main.name
         context         = ExpansionContext.new(main)
         template        = Tilt.new(input_file)
-        output          = template.render(context)
+        if layout_file
+          layout = Tilt.new(layout_file)
+          output = layout.render(context, locals) do
+            template.render(context, locals, &block)
+          end
+        else
+          output = template.render(context, locals, &block)
+        end
         File.write(output_file, output)
       end
+    end
+
+    def template_path(template)
+      user_template_path   = user_template_for(template)
+      system_template_path = system_template_for(template) or
+        fail "No system template found for #{template}"
+      user_template_path ||=
+        user_template_path_for_system_template_path(system_template_path)
+      user_template_path
+    end
+
+    def existing_template_path(template)
+      template_path(template).tap do |p|
+        File.exist?(p) or fail "Template #{template} does not exist!"
+      end
+    end
+
+    def user_template_path_for_system_template_path(sys_path)
+      rel = rel_path(sys_path, main.system_template_dir)
+      clean_path("#{main.template_dir}/#{rel}")
+    end
+
+    def main_layout
+      "site/layouts/_main.html"
+    end
+
+    def fascicle_template
+      "site/_fascicle.html"
+    end
+
+    def generate_fascicle_pages(fascicle_manifest, toc_partial)
+      fascicle_files = File.read(fascicle_manifest).split
+      toc = Nokogiri::HTML::Document.new.fragment
+      fascicle_files.each_with_index do |fasc_file, index|
+        fasc_doc  = open(fasc_file) do |f| Nokogiri::XML(f) end
+        title     = fasc_doc.at_css("title").text
+        name      = fasc_file.pathmap("%n")
+        content   = fasc_doc.at_css("div.fascicle").children
+        path      = "#{site_fascicle_dir}/#{name}.html"
+        site_path = rel_path(path, site_dir)
+        toc.add_child("<li><a href='/#{site_path}'>#{title}</a></li>")
+        locals    = { title: title, name: name, fascicle_number: index + 1 }
+        generate_page(path, template: fascicle_template, locals: locals) do
+          content.to_html
+        end
+      end
+      toc.write_html_to(toc_partial)
+    end
+
+    def generate_page(path,
+        template: "site/_page",
+        layout: "site/layouts/_main",
+        locals: {},
+        &block)
+      template_file = existing_template_path(template) or
+        fail "Template not found: #{template}"
+      layout_file   = existing_template_path(layout) or
+        fail "Layout not found: #{layout}"
+      expand_template(
+        template_file,
+        path,
+        layout_file: layout_file,
+        locals: locals,
+        &block)
     end
   end
 end

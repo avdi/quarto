@@ -204,16 +204,28 @@ module Quarto
       doc = open(export_file) do |f|
         Nokogiri::HTML(f)
       end
+      name         = export_file.pathmap("%n")
+      headers      = doc.css("h1, h2, h3, h4, h5, h6")
+      first_header = headers.first
+      title        = first_header ? first_header.text.strip : name
       normal_doc = Nokogiri::XML.parse(SECTION_TEMPLATE)
       body_elt        = normal_doc.at_css("body")
       export_body_elt = doc.at_css("body")
+      export_content  = export_body_elt.children
+      fascicle_elt   = body_elt.add_child(
+        normal_doc.create_element("div") do |elt|
+          elt["class"]                 = "fascicle"
+          elt["data-fascicle-source"] = export_file
+          elt["data-fascicle-name"]   = name
+          elt["data-fascicle-title"]  = title
+        end)
       if body_has_meaningful_content?(export_body_elt)
-        body_elt.replace(export_body_elt)
+        fascicle_elt.add_child(export_content)
       else
-        body_elt.add_child(
+        fascicle_elt.add_child(
           normal_doc.create_comment("No content for #{export_file}"))
       end
-      normal_doc.at_css("title").content = export_file.pathmap("%n")
+      normal_doc.at_css("title").content = title
       yield(normal_doc) if block_given?
       open(section_file, "w") do |f|
         format_xml(f) do |pipe_input|
@@ -398,6 +410,42 @@ module Quarto
       expand_xinclude(master_file, skeleton_file, format: false)
     end
 
+    def fascicle_manifest
+      "#{build_dir}/fascicle-manifest.txt"
+    end
+
+    def fascicle_dir
+      "#{build_dir}/fascicles"
+    end
+
+    def extract_fascicles(master_file, fascicle_manifest)
+      master_doc = open(master_file) do |f| Nokogiri::XML(f) end
+      fasc_elts  = master_doc.css("div.fascicle")
+      paths      = []
+      fasc_elts.each_with_index { |elt, index|
+        filename = "%03d-%s.xhtml" % [index + 1, elt["data-fascicle-name"]]
+        path     = "#{fascicle_dir}/#{filename}"
+        title    = elt["data-fascicle-title"]
+        fasc_doc = master_doc.dup
+        fasc_doc.at_css("body").children = elt.dup
+        fasc_doc.at_css("title").content = title
+        mkpath path.pathmap("%d")
+        open(path, "w") do |f|
+          format_xml(f) do |format_input|
+            say "write #{path}"
+            fasc_doc.write_xml_to(format_input)
+          end
+        end
+        paths << path
+      }
+      say "write #{fascicle_manifest}"
+      open(fascicle_manifest, "w") do |f|
+        paths.each do |path|
+          f.puts(path)
+        end
+      end
+    end
+
     def assets_file
       "#{build_dir}/assets.timestamp"
     end
@@ -530,6 +578,13 @@ module Quarto
 
       desc "Perform source-code highlighting"
       task :highlight => highlights_file
+
+      desc "Separate master into smaller chunks"
+      task :fascicles => fascicle_manifest
+
+      file fascicle_manifest => master_file do
+        extract_fascicles(master_file, fascicle_manifest)
+      end
 
       file highlights_file => [skeleton_file] do |t|
         highlights_needed  = highlights_needed_by(skeleton_file)
