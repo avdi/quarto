@@ -10,7 +10,11 @@ module Quarto
       attr_accessor :site
     end
 
-    ExpansionContext = Struct.new(:build)
+    ExpansionContext = Struct.new(:build) do
+      def render(template, **options, &block)
+        build.site.render_template(template, **options, &block)
+      end
+    end
 
     attr_reader :bower_deps
 
@@ -25,12 +29,17 @@ module Quarto
     end
 
     def define_tasks
+      namespace :templates do
+        task :populate
+      end
+
       namespace :site do
         desc "Build a website for the book"
-        task :build => [site_dir, *site_files, "bower:install"]
+        task :build => ["templates:populate", site_dir, *site_files, "bower:install"]
 
         desc "Deploy the book website"
         task :deploy => :build
+
 
         directory site_dir
         directory site_template_dir
@@ -65,6 +74,7 @@ module Quarto
           template_file rel_path(bower_package_file, "build")
           template_file fascicle_template
           template_file main_layout
+          template_file "site/_book_metadata.html"
         end
       end
     end
@@ -134,7 +144,7 @@ module Quarto
         user_template_path =
           user_template_path_for_system_template_path(system_template_path)
         file user_template_path => system_template_path do
-          mkdir user_template_path.pathmap("%d")
+          mkpath user_template_path.pathmap("%d")
           cp system_template_path, user_template_path
         end
       end
@@ -145,6 +155,8 @@ module Quarto
           expand_template(input_file, output_file)
         end
       end
+
+      Rake::Task["templates:populate"].enhance([user_template_path])
     end
 
     def user_template_for(base_path)
@@ -183,20 +195,29 @@ module Quarto
       if has_final_ext?(input_file)
         cp input_file, output_file
       else
-        say "expand #{input_file} -> #{output_file}"
         context         = ExpansionContext.new(main)
         template        = Tilt.new(input_file)
         if layout_file
+          say "expand #{input_file} -> #{output_file} (layout: #{layout_file})"
           layout = Tilt.new(layout_file)
           output = layout.render(context, locals) do
             template.render(context, locals, &block)
           end
         else
+          say "expand #{input_file} -> #{output_file}"
           output = template.render(context, locals, &block)
         end
         File.write(output_file, output)
       end
     end
+
+    def render_template(template_name, **locals, &block)
+      template_file    = existing_template_path(template_name)
+      context          = ExpansionContext.new(main)
+      template         = Tilt.new(template_file)
+      template.render(context, locals, &block)
+    end
+
 
     def template_path(template)
       user_template_path   = user_template_for(template)
@@ -242,7 +263,9 @@ module Quarto
           content.to_html
         end
       end
-      toc.write_html_to(toc_partial)
+      open(toc_partial, "w") do |f|
+        f.write(toc.children.to_html)
+      end
     end
 
     def generate_page(path,
