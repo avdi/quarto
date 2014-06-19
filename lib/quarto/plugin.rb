@@ -25,5 +25,9 @@ module Quarto
     def define_tasks
       # placeholder
     end
+
+    def say(*messages)
+      main.say(*messages)
+    end
   end
 end

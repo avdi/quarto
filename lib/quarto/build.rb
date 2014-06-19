@@ -170,6 +170,14 @@ module Quarto
       send("export_from_#{format}", export_file, source_file)
     end
 
+    def template_dir
+      "templates"
+    end
+
+    def template_build_dir
+      "#{build_dir}/template_expansions"
+    end
+
     def section_dir
       "#{build_dir}/sections"
     end
@@ -449,6 +457,10 @@ module Quarto
       File.write(output_file, ERB.new(File.read(template_file)).result(binding))
     end
 
+    def say(*messages)
+      $stderr.puts(*messages) if verbose
+    end
+
     private
 
     def format_xml(output_io)
@@ -476,10 +488,6 @@ module Quarto
           IO.copy_stream(output, f)
         end
       end
-    end
-
-    def say(*messages)
-      $stderr.puts(*messages) if verbose
     end
 
     def xmlflags
