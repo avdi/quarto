@@ -65,6 +65,7 @@ RSpec.configure do |config|
     example.metadata[:test_construct] = true
   end
 
+  config.expose_current_running_example_as :example
 
   config.after :each, task: true do |example|
     if example.exception
