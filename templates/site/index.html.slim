@@ -1,3 +1,11 @@
-h1 = build.title
-ul
-  == render "site/_toc.html"
+doctype html
+
+html
+  head
+    title = build.title
+    == render "_book_metadata.html"
+
+  body
+    h1 = build.title
+    h3 Table of Contents
+    == render "_toc.html"

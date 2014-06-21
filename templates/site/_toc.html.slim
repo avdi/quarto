@@ -1,2 +1,2 @@
-- main.fascicles.each do |fascicle|
-  li: a href="/#{fascicle.path}" = fascicle.title
+- build.fascicles.each do |fascicle|
+  li: a href=build.site.fascicle_url(fascicle) = fascicle.title

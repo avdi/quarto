@@ -10,6 +10,7 @@ require 'erb'
 require 'quarto/font'
 require 'quarto/stylesheet_set'
 require "pathname"
+require "ostruct"
 
 module Quarto
   class Build
@@ -444,6 +445,20 @@ module Quarto
           f.puts(path)
         end
       end
+    end
+
+    def fascicles
+      File.read(fascicle_manifest).split.map.with_index{ |path, index|
+        doc = open(path) {|f| Nokogiri::XML(f)}
+        name = doc.at_css(".fascicle")["data-fascicle-name"]
+        number = index + 1
+        OpenStruct.new(
+          path: path,
+          title: doc.at_css("title").text.strip,
+          name: name,
+          number: number,
+          numbered_name: "%03d-%s" % [number, name])
+      }
     end
 
     def assets_file
