@@ -120,12 +120,25 @@ module Quarto
       end
     end
 
-    def expand_template(input, output, **locals, &block)
-      say "expand #{input.path} -> #{output}"
-      content = input.render(main, **locals, &block)
+    def expand_template(input, output, layout: default_layout, **locals, &block)
+      layout_template =
+        layout &&
+        input.html? &&
+        Template.new(find_template_for("#{build_dir}/#{layout}"))
+      if layout_template
+        say "expand #{input.path} -> #{output} (layout: #{layout_template.path})"
+      else
+        say "expand #{input.path} -> #{output}"
+      end
+      content = input.render(main, layout: layout_template, **locals, &block)
+      mkpath output.pathmap("%d")
       open(output, "w") do |f|
         f.write(content)
       end
+    end
+
+    def default_layout
+      "site/_layout.html"
     end
 
     def add_bower_dep(package)

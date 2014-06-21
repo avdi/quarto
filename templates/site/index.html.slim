@@ -1,11 +1,5 @@
-doctype html
-
-html
-  head
-    title = build.title
-    == render "_book_metadata.html"
-
-  body
-    h1 = build.title
-    h3 Table of Contents
+h1 = build.title
+h3 Table of Contents
+nav.toc
+  ul
     == render "_toc.html"

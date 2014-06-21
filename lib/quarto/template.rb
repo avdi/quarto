@@ -3,7 +3,7 @@ require "tilt"
 
 module Quarto
   class Template
-    RenderContext = Struct.new(:build) do
+    RenderContext = Struct.new(:build, :layout) do
       def render(resource, **locals, &block)
         path     = "#{build.site.site_dir}/#{resource}"
         template = Template.new(build.site.find_template_for(path))
@@ -36,9 +36,25 @@ module Quarto
       tilt_templates.empty? || tilt_templates == [Tilt::PlainTemplate]
     end
 
-    def render(build, render_context: RenderContext.new(build), **locals, &block)
-      tilt_template    = Tilt.new(path)
-      tilt_template.render(render_context, locals, &block)
+    def html?
+      path.pathmap("%f") =~ /\.html\b/
+    end
+
+    def render(
+        build,
+        layout:         nil,
+        render_context: RenderContext.new(build, layout),
+        **locals,
+        &block)
+      tilt_template = Tilt.new(path, format: :html5, pretty: true)
+      content       = tilt_template.render(render_context, locals, &block)
+      if layout
+        layout.render(build, render_context: render_context, **locals) do
+          content
+        end
+      else
+        content
+      end
     end
   end
 end
