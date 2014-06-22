@@ -42,20 +42,31 @@ module Quarto
         desc "Deploy the book website"
         task :deploy => :build
 
+        desc "Start a simple server to test the site"
+        task :serve do
+          sh RUBY, *%W[-run -e httpd #{site_dir} -p 9090]
+        end
+
         directory site_dir
         directory site_template_dir
 
         task "resources" do
+          layout_file = find_template_for("#{build_dir}/#{default_layout}")
+
           resources.each do |resource|
-            Rake.application[resource].invoke
+            task = Rake.application[resource]
+            task.enhance([layout_file])
+            task.invoke
           end
 
           main.fascicles.each do |fascicle|
             site_path = site_fascicle_path(fascicle)
             deps = [fascicle.path, fascicle_template_path]
-            Rake.application.define_task(Rake::FileTask, site_path => deps) do
+            task = Rake.application.define_task(Rake::FileTask, site_path => deps) do
               generate_fascicle_page(fascicle, site_path)
-            end.invoke
+            end
+            task.enhance([layout_file])
+            task.invoke
           end
         end
 
