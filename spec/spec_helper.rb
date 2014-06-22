@@ -68,11 +68,15 @@ RSpec.configure do |config|
   config.expose_current_running_example_as :example
 
   config.after :each, task: true do |example|
-    if example.exception
-      puts "=== Task Output ==="
-      puts @output
-      puts "=== End Task Output ==="
-    end
+    # if example.exception
+    #   puts
+    #   puts
+    #   puts "==================== Task Output ===================="
+    #   puts @output
+    #   puts "==================== End Task Output ===================="
+    #   puts
+    #   puts
+    # end
   end
 
   config.before :each do |example|

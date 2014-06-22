@@ -90,3 +90,14 @@ END
     }
   end
 end
+
+# describe "rake export", task: true do
+#   specify "with markdown sources" do
+#     populate_with "examples/markdown-basic"
+
+#     run "rake export"
+
+#     expect(%W[build/exports/intro.html
+#               build/exports/section1/ch1.html]).to match_master
+#   end
+# end
