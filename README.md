@@ -108,7 +108,8 @@ Quarto.configure do |config|
   config.title               = "Confident Ruby"
 
   config.use :git
-  config.use :orgmode
+  config.use :orgmode       # if you want to use org-mode
+  config.use :markdown      # if you want to use markdown
   config.use :doc_raptor
   config.use :pandoc_epub
   config.use :epubcheck
