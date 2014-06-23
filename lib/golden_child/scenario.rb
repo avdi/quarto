@@ -77,7 +77,8 @@ module GoldenChild
         paths.each do |path|
           master_file  = master_path + path
           actual_file  = actual_path + path
-          approval_cmd = "golden approve #{actual_file}"
+          shortcode    = get_shortcode_for(actual_file)
+          approval_cmd = "golden approve #{shortcode}"
           message      = ""
           file_pass    = false
           if !actual_file.exist?
@@ -122,6 +123,17 @@ module GoldenChild
     def diff(master_file, actual_file)
       differ = RSpec::Support::Differ.new
       differ.diff(actual_file.read, master_file.read)
+    end
+
+    def get_shortcode_for(actual_file)
+      code = configuration.state_transaction do |store|
+        shortcode_map = (store[:shortcode_map] ||= {})
+        shortcode_map.fetch(actual_file.to_s) {
+          new_code = shortcode_map.values.max.to_i + 1
+          shortcode_map[actual_file.to_s] = new_code
+        }
+      end
+      "@#{code}"
     end
 
     def setup

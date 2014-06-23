@@ -8,20 +8,24 @@ command = ARGV.shift
 
 options = OptionParser.new do |o|
   o.banner = "Usage: #{o.program_name} COMMAND [options]\n\n" +
-             "Commands: approve"
+      "Commands: approve"
 end
 
-case command
-when "approve"
-  options.banner = "Usage: #{options.program_name} approve PATH..."
-  options.parse!
-  filenames = ARGV.to_a
-  if filenames.empty?
+begin
+  case command
+  when "approve"
+    options.banner = "Usage: #{options.program_name} approve PATH_OR_SHORTCODE..."
+    options.parse!
+    filenames = ARGV.to_a
+    if filenames.empty?
+      puts options
+      abort
+    end
+    GoldenChild.approve(*filenames)
+  else
     puts options
-    abort
+    exit
   end
-  GoldenChild.approve(*filenames)
-else
-  puts options
-  exit
+rescue GoldenChild::UserError => error
+  abort error.message
 end

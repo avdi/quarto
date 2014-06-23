@@ -2,6 +2,7 @@ require "golden_child/helpers"
 require "golden_child/scenario"
 require "fileutils"
 require "pathname"
+require "yaml/store"
 
 module GoldenChild
   class Error < StandardError; end
@@ -23,7 +24,12 @@ module GoldenChild
     end
   end
 
-  def self.approve_file(path)
+  def self.approve_file(path_or_shortcode)
+    path = case path_or_shortcode
+           when /^@\d+$/ then get_path_for_shortcode(path_or_shortcode)
+           else
+             path_or_shortcode
+           end
     path = Pathname(path)
     raise UserError, "No such file #{path}" unless path.exist?
     raise UserError, "Not a file: #{path}" unless path.file?
@@ -34,6 +40,25 @@ module GoldenChild
     master_path = master_root + rel_path
     mkpath master_path.dirname
     cp path, master_path
+  end
+
+  def self.get_path_for_shortcode(code)
+    value = code[/\d+/].to_i
+    state_transaction(read_only: true) do |store|
+      store[:shortcode_map].invert.fetch(value) do
+        fail UserError, "Shortcode not found: #{code}"
+      end
+    end
+  end
+
+  def self.state_transaction(read_only: false)
+    config_dir = project_root + ".golden_child"
+    mkpath config_dir unless config_dir.exist?
+    state_db = config_dir + "state.yaml"
+    store = YAML::Store.new(state_db)
+    store.transaction(read_only) do
+      yield store
+    end
   end
 
   def self.actual_root

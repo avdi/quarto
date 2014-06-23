@@ -19,3 +19,4 @@ tmp
 /vendor
 /.idea
 /spec/golden/actual
+/.golden_child/state.yaml
