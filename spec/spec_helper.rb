@@ -3,6 +3,7 @@ require_relative "env"
 require "fileutils"
 require "pathname"
 require "open3"
+require "golden_child/rspec"
 
 begin
   # use `bundle install --standalone' to get this...
@@ -58,12 +59,8 @@ module TaskSpecHelpers
   end
 end
 
-
 RSpec.configure do |config|
   config.include TaskSpecHelpers, task: true
-  config.before :each do |example|
-    example.metadata[:test_construct] = true
-  end
 
   config.expose_current_running_example_as :example
 

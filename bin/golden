@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require "optparse"
+$:.unshift(File.expand_path("../../lib", __FILE__))
+require "golden_child"
+
+command = ARGV.shift
+
+options = OptionParser.new do |o|
+  o.banner = "Usage: #{o.program_name} COMMAND [options]\n\n" +
+             "Commands: approve"
+end
+
+case command
+when "approve"
+  options.banner = "Usage: #{options.program_name} approve PATH..."
+  options.parse!
+  filenames = ARGV.to_a
+  if filenames.empty?
+    puts options
+    abort
+  end
+  GoldenChild.approve(*filenames)
+else
+  puts options
+  exit
+end

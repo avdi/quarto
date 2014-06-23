@@ -24,8 +24,8 @@ module Quarto
 
     def initialize(*)
       super
-      @bower_deps        = []
-      @resources             = []
+      @bower_deps = []
+      @resources  = []
       add_resource "index.html"
     end
 
