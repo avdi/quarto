@@ -8,8 +8,8 @@ RSpec::Core::RakeTask.new(:spec) do |t|
 end
 
 CLEAN << VENDOR_ORG_MODE_DIR <<
-  "vendor/org-#{ORG_VERSION}" <<
-  "vendor/org-#{ORG_VERSION}.tar.gz"
+  "vendor/org-#{ORG_VERSION}"
+CLOBBER << "vendor/org-#{ORG_VERSION}.tar.gz"
 
 task :default        => :spec
 task :spec           => :vendor_orgmode
@@ -31,7 +31,9 @@ end
 
 file "vendor/org-#{ORG_VERSION}.tar.gz" => "vendor" do |t|
   cd "vendor" do
-    sh "wget http://orgmode.org/org-#{ORG_VERSION}.tar.gz"
+    "http://orgmode.org/org-#{ORG_VERSION}.tar.gz".tap do |url|
+      sh "which wget && wget #{url} || curl -O #{url}"
+    end
   end
 end
 
