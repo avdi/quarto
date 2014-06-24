@@ -59,6 +59,10 @@ module TaskSpecHelpers
   end
 end
 
+GoldenChild.configure do |config|
+  config.env["VENDOR_ORG_MODE_DIR"] = VENDOR_ORG_MODE_DIR
+end
+
 RSpec.configure do |config|
   config.include TaskSpecHelpers, task: true
 

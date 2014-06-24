@@ -1,32 +1,45 @@
 require "golden_child/helpers"
 require "golden_child/scenario"
+require "golden_child/configuration"
 require "fileutils"
 require "pathname"
 require "yaml/store"
+require "forwardable"
 
 module GoldenChild
-  class Error < StandardError; end
-  class UserError < Error; end
+  class Error < StandardError;
+  end
+  class UserError < Error;
+  end
 
   extend FileUtils
+  extend SingleForwardable
 
+  def_delegators :configuration, :golden_path, :project_root, :master_root,
+      :actual_root
+  def_delegators :configuration, :get_path_for_shortcode
+
+  # @return [GoldenChild::Configuration]
   def self.configuration
-    self
+    @configuration ||= Configuration.new
   end
 
+  # @yield [GoldenChild::Configuration] the global configuration
   def self.configure
-    yield self
+    yield configuration
   end
 
-  def self.approve(*filenames)
+  # @param [Array<String, Pathname>] paths or shortcodes for files to accept
+  def self.accept(*filenames)
     filenames.each do |fn|
-      approve_file(fn)
+      accept_file(fn)
     end
   end
 
-  def self.approve_file(path_or_shortcode)
+  def self.accept_file(path_or_shortcode)
     path = case path_or_shortcode
-           when /^@\d+$/ then get_path_for_shortcode(path_or_shortcode)
+           when /^@\d+$/
+             get_path_for_shortcode(path_or_shortcode)
            else
              path_or_shortcode
            end
@@ -40,46 +53,5 @@ module GoldenChild
     master_path = master_root + rel_path
     mkpath master_path.dirname
     cp path, master_path
-  end
-
-  def self.get_path_for_shortcode(code)
-    value = code[/\d+/].to_i
-    state_transaction(read_only: true) do |store|
-      store[:shortcode_map].invert.fetch(value) do
-        fail UserError, "Shortcode not found: #{code}"
-      end
-    end
-  end
-
-  def self.state_transaction(read_only: false)
-    config_dir = project_root + ".golden_child"
-    mkpath config_dir unless config_dir.exist?
-    state_db = config_dir + "state.yaml"
-    store = YAML::Store.new(state_db)
-    store.transaction(read_only) do
-      yield store
-    end
-  end
-
-  def self.actual_root
-    golden_path + "actual"
-  end
-
-  def self.master_root
-    golden_path + "master"
-  end
-
-  def self.golden_path
-    Pathname("spec/golden")
-  end
-
-  class << self
-    def project_root
-      @project_root ||= Pathname.pwd
-    end
-
-    def project_root=(new_root)
-      @project_root = Pathname(new_root).expand_path
-    end
   end
 end

@@ -8,20 +8,20 @@ command = ARGV.shift
 
 options = OptionParser.new do |o|
   o.banner = "Usage: #{o.program_name} COMMAND [options]\n\n" +
-      "Commands: approve"
+      "Commands: accept"
 end
 
 begin
   case command
-  when "approve"
-    options.banner = "Usage: #{options.program_name} approve PATH_OR_SHORTCODE..."
+  when "accept"
+    options.banner = "Usage: #{options.program_name} accept PATH_OR_SHORTCODE..."
     options.parse!
     filenames = ARGV.to_a
     if filenames.empty?
       puts options
       abort
     end
-    GoldenChild.approve(*filenames)
+    GoldenChild.accept(*filenames)
   else
     puts options
     exit

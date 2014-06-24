@@ -10,9 +10,11 @@ module GoldenChild
     include FileUtils
     extend Forwardable
 
-    attr_reader :name, :project_root, :command_history
+    attr_reader :name, :command_history, :configuration
 
-    def_delegators :configuration, :golden_path, :actual_root
+    # @!method project_root
+    #   (see Configuration#project_root)
+    def_delegators :configuration, :golden_path, :actual_root, :project_root
 
     Validation = Struct.new(:message)
     class FailedValidation < Validation
@@ -26,10 +28,10 @@ module GoldenChild
       end
     end
 
-    def initialize(name:, project_root: configuration.project_root)
+    def initialize(name:, configuration: ::GoldenChild.configuration)
       @name            = name
-      @project_root    = Pathname(project_root).expand_path
       @command_history = []
+      @configuration   = configuration
     end
 
     def populate_from(source_dir, caller=caller)
@@ -47,13 +49,18 @@ module GoldenChild
       end
     end
 
-    def run(*args, allow_fail: false, caller: caller, ** options)
-      options[:chdir]        ||= actual_path.to_s
-      stdout, stderr, status = Open3.capture3(*args, ** options)
+    def run(*args, allow_fail: false, env: self.env, caller: caller, ** options)
+      options[:chdir] ||= actual_path.to_s
+      env = env.map{|k,v| [k.to_s, v.to_s]}.to_h
+      stdout, stderr, status = Open3.capture3(env, *args, ** options)
       command_history.push(
           command: args, status: status, stdout: stdout, stderr: stderr)
       command_log = ""
       command_log << "\nCommand: #{args}"
+      command_log << "\nEnvironment:"
+      env.each_pair do |key, value|
+        command_log << "\n  #{key}=#{value}"
+      end
       command_log << "\nExited with status #{status.exitstatus}"
       command_log << "\n========== Command STDOUT ==========\n"
       command_log << stdout
@@ -126,7 +133,7 @@ module GoldenChild
     end
 
     def get_shortcode_for(actual_file)
-      code = configuration.state_transaction do |store|
+      code = state_transaction do |store|
         shortcode_map = (store[:shortcode_map] ||= {})
         shortcode_map.fetch(actual_file.to_s) {
           new_code = shortcode_map.values.max.to_i + 1
@@ -167,8 +174,13 @@ module GoldenChild
       name.downcase.tr_s("^a-z0-9", "-")[0..63]
     end
 
-    def configuration
-      ::GoldenChild.configuration
+    # @return [Hash] editable env var hash, defaults to {#configuration}
+    def env
+      @env ||= configuration.env.dup
     end
+
+    private
+
+    def_delegators :configuration, :state_transaction, :get_path_for_shortcode
   end
 end
