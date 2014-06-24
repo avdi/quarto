@@ -61,6 +61,10 @@ end
 
 GoldenChild.configure do |config|
   config.env["VENDOR_ORG_MODE_DIR"] = VENDOR_ORG_MODE_DIR
+  config.add_content_filter("*.xhtml") do |file_content|
+    timestamp_pattern = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-\d{2}:\d{2}/
+    file_content.gsub(timestamp_pattern, "1970-01-01-T00:00:00Z")
+  end
 end
 
 RSpec.configure do |config|

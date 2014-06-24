@@ -1,5 +1,5 @@
-require 'spec_helper'
-require 'open3'
+require "spec_helper"
+require "open3"
 
 describe "rake master", golden: true do
   specify "builds a master file and links in images" do

@@ -14,7 +14,8 @@ module GoldenChild
 
     # @!method project_root
     #   (see Configuration#project_root)
-    def_delegators :configuration, :golden_path, :actual_root, :project_root
+    def_delegators :configuration, :golden_path, :actual_root, :project_root,
+                   :content_filters
 
     Validation = Struct.new(:message)
     class FailedValidation < Validation
@@ -50,8 +51,8 @@ module GoldenChild
     end
 
     def run(*args, allow_fail: false, env: self.env, caller: caller, ** options)
-      options[:chdir] ||= actual_path.to_s
-      env = env.map{|k,v| [k.to_s, v.to_s]}.to_h
+      options[:chdir]        ||= actual_path.to_s
+      env                    = env.map { |k, v| [k.to_s, v.to_s] }.to_h
       stdout, stderr, status = Open3.capture3(env, *args, ** options)
       command_history.push(
           command: args, status: status, stdout: stdout, stderr: stderr)
@@ -85,7 +86,7 @@ module GoldenChild
           master_file  = master_path + path
           actual_file  = actual_path + path
           shortcode    = get_shortcode_for(actual_file)
-          approval_cmd = "golden approve #{shortcode}"
+          approval_cmd = "golden accept #{shortcode}"
           message      = ""
           file_pass    = false
           if !actual_file.exist?
@@ -99,12 +100,12 @@ module GoldenChild
             message << "\ndoes not yet exist."
             message << "\nActual file: #{actual_file}"
             message << "\nhas the following content:\n\n"
-            message << actual_file.read
+            message << filter_file(actual_file)
             message << "\n\nIf this looks correct, run `#{approval_cmd}`"
           elsif !master_file.file?
             message << "Master: #{master_file}"
             message << "must be a file, but it is a #{master_file.ftype}."
-          elsif !compare_file(master_file, actual_file)
+          elsif filtered_files_differ?(master_file, actual_file)
             message << "Actual: #{actual_file}"
             message << "\ndiffers from master: #{master_file}"
             message << "\n"
@@ -127,16 +128,31 @@ module GoldenChild
       end
     end
 
+    def filtered_files_differ?(master_file, actual_file)
+      filter_file(master_file) != filter_file(actual_file)
+    end
+
     def diff(master_file, actual_file)
-      differ = RSpec::Support::Differ.new
-      differ.diff(actual_file.read, master_file.read)
+      differ      = RSpec::Support::Differ.new
+      differences = differ.diff(filter_file(actual_file), filter_file(master_file))
+      differences.empty? ? nil : differences
+    end
+
+    def filter_file(filename)
+      @filtered_files ||= {} # memoization
+      @filtered_files.fetch(filename) {
+        @filtered_files[filename] = content_filters.reduce(filename.read) {
+            |content, filter|
+          filter.call(content)
+        }
+      }
     end
 
     def get_shortcode_for(actual_file)
       code = state_transaction do |store|
         shortcode_map = (store[:shortcode_map] ||= {})
         shortcode_map.fetch(actual_file.to_s) {
-          new_code = shortcode_map.values.max.to_i + 1
+          new_code                        = shortcode_map.values.max.to_i + 1
           shortcode_map[actual_file.to_s] = new_code
         }
       end
@@ -156,6 +172,7 @@ module GoldenChild
     def actual_path
       actual_root + relative_path
     end
+
     alias_method :root, :actual_path
 
     def master_path

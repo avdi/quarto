@@ -1,10 +1,15 @@
 require "rake/clean"
 require "bundler/gem_tasks"
 require "rspec/core/rake_task"
+require "yard"
 require_relative "spec/env"
 
 RSpec::Core::RakeTask.new(:spec) do |t|
   t.rspec_opts = "-t ~org"
+end
+
+YARD::Rake::YardocTask.new do |t|
+  t.options = []
 end
 
 CLEAN << VENDOR_ORG_MODE_DIR <<

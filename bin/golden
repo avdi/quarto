@@ -8,7 +8,7 @@ command = ARGV.shift
 
 options = OptionParser.new do |o|
   o.banner = "Usage: #{o.program_name} COMMAND [options]\n\n" +
-      "Commands: accept"
+      "Commands: accept, remove/rm/delete"
 end
 
 begin
@@ -22,6 +22,15 @@ begin
       abort
     end
     GoldenChild.accept(*filenames)
+  when "remove", "rm", "delete"
+    options.banner = "Usage: #{options.program_name} rm PATH_OR_SHORTCODE"
+    options.parse!
+    filenames = ARGV.to_a
+    if filenames.empty?
+      puts options
+      abort
+    end
+    GoldenChild.remove(*filenames)
   else
     puts options
     exit

@@ -35,8 +35,12 @@ module Quarto
     end
 
     def define_tasks
+      task :default => :site
+
+      desc "Build a website for the book"
+      task :site => "site:build"
+
       namespace :site do
-        desc "Build a website for the book"
         task :build => ["fascicles", site_dir, "site:resources", "bower:install"]
 
         desc "Deploy the book website"

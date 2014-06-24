@@ -20,7 +20,18 @@ RSpec.configure do |config|
   config.include GoldenChild::RspecMatchers, golden: true
 
   config.before(:example, golden: true) do |example|
-    self.scenario = GoldenChild::Scenario.new(name: example.full_description)
+    # If it looks like an RSpec-Given example, use the example group name.
+    #
+    # In RSpec-Given the group names the scenario,and the example names are
+    # messy source code.
+    #
+    # TODO: Determine if this is a problem for nested RSpec-Given groups
+    scenario_name = if example.description =~ /^\s*Then\b/
+                      example.example_group.description
+                    else
+                      example.full_description
+                    end
+    self.scenario = GoldenChild::Scenario.new(name: scenario_name)
     example.metadata[:golden_child_scenario] = scenario
     scenario.setup
   end

@@ -36,22 +36,44 @@ module GoldenChild
     end
   end
 
+  def self.remove(*filenames)
+    filenames.each do |fn|
+      remove_master_file(fn)
+    end
+  end
+
   def self.accept_file(path_or_shortcode)
+    path = resolve_path(path_or_shortcode)
+    master_path = find_master_for(path)
+    mkpath master_path.dirname
+    cp path, master_path
+  end
+
+
+  def self.remove_master_file(path_or_shortcode)
+    path = resolve_path(path_or_shortcode)
+    master_path = find_master_for(path)
+    rm master_path
+  end
+
+  # @return [Pathname]
+  def self.resolve_path(path_or_shortcode)
     path = case path_or_shortcode
-           when /^@\d+$/
-             get_path_for_shortcode(path_or_shortcode)
-           else
-             path_or_shortcode
-           end
-    path = Pathname(path)
+    when /^@\d+$/
+      get_path_for_shortcode(path_or_shortcode)
+    else
+      path_or_shortcode
+    end
+    Pathname(path)
+  end
+
+  def self.find_master_for(path)
     raise UserError, "No such file #{path}" unless path.exist?
     raise UserError, "Not a file: #{path}" unless path.file?
     rel_path = path.relative_path_from(actual_root)
     unless rel_path
       raise UserError, "File #{path} is not in #{actual_root}"
     end
-    master_path = master_root + rel_path
-    mkpath master_path.dirname
-    cp path, master_path
+    master_root + rel_path
   end
 end
