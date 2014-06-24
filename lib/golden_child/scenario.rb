@@ -17,7 +17,9 @@ module GoldenChild
     def_delegators :configuration, :golden_path, :actual_root, :project_root,
                    :content_filters
 
+    # @abstract
     Validation = Struct.new(:message)
+
     class FailedValidation < Validation
       def passed?
         false
@@ -29,12 +31,18 @@ module GoldenChild
       end
     end
 
+    # @param [String] name The name of the scenario (e.g. RSpec example group)
     def initialize(name:, configuration: ::GoldenChild.configuration)
       @name            = name
       @command_history = []
       @configuration   = configuration
     end
 
+    # Recursively populate the current scenario with copies of files from
+    # `source_dir`
+    #
+    # @param [String, Pathname] source_dir
+    # @param [Array] caller
     def populate_from(source_dir, caller=caller)
       Dir.chdir(project_root) do
         raise "Scenario has not been set up" unless actual_path.exist?
@@ -50,6 +58,16 @@ module GoldenChild
       end
     end
 
+    # Run a command in the context of the current scenario.
+    #
+    # @param [Array] args The command. See {Process.spawn} for the various
+    #   forms supported. Note that any environment should be passed via the
+    #   `env` option below.
+    # @param [true, false] allow_fail (false) Whether to raise an exception
+    #   if the command fails.
+    # @param [Hash] env Environment variables for the command
+    # @param [Array] caller
+    # @param [Hash] options
     def run(*args, allow_fail: false, env: self.env, caller: caller, ** options)
       options[:chdir]        ||= actual_path.to_s
       env                    = env.map { |k, v| [k.to_s, v.to_s] }.to_h
@@ -77,6 +95,10 @@ module GoldenChild
       end
     end
 
+    # Unzip a zip file, and execute commands in the context of the unzipped
+    # directory.
+    #
+    # @param [String, Pathname] relative_filename The path of the zip file
     def within_zip(relative_filename)
       relative_filename = Pathname(relative_filename)
       filename          = actual_path + relative_filename
@@ -96,6 +118,8 @@ module GoldenChild
       current_actual_path + (relative_filename.to_s + ".golden_child_unzip")
     end
 
+    # Verify that `files` are identical to their corresponding gold master
+    # files.
     def validate(*files, ** options)
       paths   = Rake::FileList[*files.map(&:to_s)]
       pass    = true
