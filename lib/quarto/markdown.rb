@@ -29,7 +29,12 @@ module Quarto
     end
 
     def normalize_markdown_export(export_file, section_file)
-      main.normalize_generic_export(export_file, section_file)
+      main.normalize_generic_export(export_file, section_file) do |doc|
+        source_listing_pre_elts = doc.css("pre[class]>code").map(&:parent)
+        source_listing_pre_elts.each do |elt|
+          elt["class"] = elt["class"] + " sourceCode"
+        end
+      end
     end
   end
 end

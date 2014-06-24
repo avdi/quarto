@@ -1,43 +1,15 @@
-require 'spec_helper'
-require 'open3'
+require "spec_helper"
+require "open3"
 
-describe 'highlight task', task: true, test_construct: true do
-  Given {
-    @construct.file "Rakefile", <<END
-require 'quarto/tasks'
-END
-    @construct.file "ch1.md", <<END
-```ruby
-puts "hello, world"
-```
-END
-    @construct.file "ch2.md", <<END
-```c
-int main(int argc, char** argv) {
-  printf("Hello, world\n")
-}
-```
-END
-  }
+describe "rake highlight", golden: true do
+  it "highlights source listings" do
+    populate_from("examples/source-listings")
 
-  When {
     run "rake highlight"
-  }
 
-  Then {
-    pending "fix specs"
-    expect(contents("build/highlights/3361c5f02e08bd44bde2d42633a2c9be201f7ec4.html")).to eq(<<END)
-<div class="highlight"><pre><span class="nb">puts</span> <span class="s2">&quot;hello, world&quot;</span>
-</pre></div>
-END
-  }
-  And {
-    expect(contents("build/highlights/e7b17ea0eeebbd00d08674cf9070d287e24dc68e.html")).to eq(<<END)
-<div class="highlight"><pre><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
-  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Hello, world</span>
-<span class="s">&quot;)</span>
-<span class="p">}</span>
-</pre></div>
-END
-  }
+    expect("build/highlights/3361c5f02e08bd44bde2d42633a2c9be201f7ec4.html").
+        to match_master
+    expect("build/highlights/b8f5d0e6fa84ab657a95f4e67d1093abcc9dd3df.html").
+        to match_master
+  end
 end

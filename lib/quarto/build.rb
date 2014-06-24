@@ -335,7 +335,12 @@ module Quarto
         Nokogiri::XML(f)
       end
       skel_doc.css("pre.sourceCode").each_with_index do |pre_elt, i|
-        lang = pre_elt["class"].split[1]
+        classes = pre_elt["class"].split
+        classes.delete("sourceCode")
+        unless classes.size == 1
+          raise "Ambiguous source code language in classes: #{classes}"
+        end
+        lang = classes.first
         ext  = {"ruby" => "rb"}.fetch(lang){ lang.downcase }
         code     = strip_listing(pre_elt.at_css("code").text)
         digest   = Digest::SHA1.hexdigest(code)
