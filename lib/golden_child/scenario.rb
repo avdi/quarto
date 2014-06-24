@@ -77,14 +77,33 @@ module GoldenChild
       end
     end
 
+    def within_zip(relative_filename)
+      relative_filename = Pathname(relative_filename)
+      filename          = actual_path + relative_filename
+      raise "Zip file not found: #{filename}" unless filename.exist?
+      unzip_dir = unzip_dir_for(relative_filename)
+      mkpath unzip_dir
+      unzip_succeeded =
+          system(*%W[unzip -qq #{filename} -d #{unzip_dir}])
+      raise "Could not unzip #{filename}" unless unzip_succeeded
+      push_working_dir(unzip_dir.relative_path_from(current_actual_path)) do
+        yield(unzip_dir)
+      end
+    end
+
+    # @return [Pathname]
+    def unzip_dir_for(relative_filename)
+      current_actual_path + (relative_filename.to_s + ".golden_child_unzip")
+    end
+
     def validate(*files, ** options)
-      paths   = Rake::FileList[*files]
+      paths   = Rake::FileList[*files.map(&:to_s)]
       pass    = true
       message = "No files to validate"
       Dir.chdir(project_root) do
         paths.each do |path|
-          master_file  = master_path + path
-          actual_file  = actual_path + path
+          master_file  = current_master_path + path
+          actual_file  = current_actual_path + path
           shortcode    = get_shortcode_for(actual_file)
           approval_cmd = "golden accept #{shortcode}"
           message      = ""
@@ -179,6 +198,14 @@ module GoldenChild
       golden_path + "master" + relative_path
     end
 
+    def current_actual_path
+      actual_path + current_working_dir
+    end
+
+    def current_master_path
+      master_path + current_working_dir
+    end
+
     def control_dir
       actual_path + ".golden_child"
     end
@@ -199,5 +226,22 @@ module GoldenChild
     private
 
     def_delegators :configuration, :state_transaction, :get_path_for_shortcode
+
+    def push_working_dir(new_dir)
+      dir_stack = working_dir_stack
+      dir_stack.push(new_dir)
+      yield
+    ensure
+      dir_stack.pop
+    end
+
+    def working_dir_stack
+      Thread.current[:golden_child_working_dir] ||= []
+    end
+
+    def current_working_dir
+      last_dir = working_dir_stack.last
+      last_dir || "."
+    end
   end
 end

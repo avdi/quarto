@@ -1,0 +1,6 @@
+require "quarto"
+
+Quarto.configure do |c|
+  c.use :markdown
+  c.use :pandoc_epub
+end

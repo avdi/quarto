@@ -14,8 +14,14 @@ module GoldenChild
       scenario.populate_from(source_dir, caller)
     end
 
-    def run(*args, **options, &block)
-      scenario.run(*args, caller: caller, **options)
+    def run(*args, ** options, &block)
+      scenario.run(*args, caller: caller, ** options)
     end
+
+    # (see {Scenario#within_zip})
+    def within_zip(*args, **, &block)
+      scenario.within_zip(*args, &block)
+    end
+
   end
 end

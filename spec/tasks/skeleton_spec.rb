@@ -1,5 +1,4 @@
 require "spec_helper"
-require "open3"
 
 describe "rake skeleton", golden: true do
   Given { populate_from("examples/source-listings") }

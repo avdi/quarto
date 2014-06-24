@@ -18,6 +18,15 @@ require "rspec/given"
 require "test_construct/rspec_integration"
 require "nokogiri"
 
+module SpecHelpers
+  def within_xml(xml_file)
+    doc = open(xml_file) do |f|
+      Nokogiri::XML(f)
+    end
+    yield doc
+  end
+end
+
 module TaskSpecHelpers
   include FileUtils
 
@@ -35,41 +44,22 @@ module TaskSpecHelpers
   def contents(filename)
     File.read(filename)
   end
-
-  def within_zip(zip_file)
-    zip_file = Pathname(zip_file)
-    raise "Zip file not found: #{zip_file}" unless zip_file.exist?
-    base = zip_file.basename
-    dir  = Pathname("../../tmp/unzip").expand_path(__FILE__)
-    rm_rf(dir) if dir.exist?
-    unzip_dir = dir + zip_file.basename(".*")
-    mkdir_p unzip_dir
-    unzip_succeeded = system(*%W[unzip -qq #{zip_file} -d #{unzip_dir}])
-    raise "Could not unzip #{zip_file}" unless unzip_succeeded
-    Dir.chdir(unzip_dir) do
-      yield(unzip_dir)
-    end
-  end
-
-  def within_xml(xml_file)
-    doc = open(xml_file) do |f|
-      Nokogiri::XML(f)
-    end
-    yield doc
-  end
 end
 
 GoldenChild.configure do |config|
   config.env["VENDOR_ORG_MODE_DIR"] = VENDOR_ORG_MODE_DIR
-  config.add_content_filter("*.xhtml") do |file_content|
-    timestamp_pattern = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}-\d{2}:\d{2}/
+  config.add_content_filter("*.xhtml", "**/content.opf") do |file_content|
+    timestamp_pattern = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}((-\d{2}:\d{2})|Z)/
     file_content.gsub(timestamp_pattern, "1970-01-01-T00:00:00Z")
+  end
+  config.add_content_filter("**/content.opf") do |file_content|
+    urn_pattern = /urn:uuid:[[:alnum:]-]+/
+    file_content.gsub(urn_pattern, "urn:uuid:FAKE-FAKE-FAKE")
   end
 end
 
 RSpec.configure do |config|
-  config.include TaskSpecHelpers, task: true
-
+  config.include SpecHelpers
   config.expose_current_running_example_as :example
 
   config.after :each, task: true do |example|
