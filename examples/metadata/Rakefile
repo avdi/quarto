@@ -1,0 +1,11 @@
+require 'quarto/tasks'
+Quarto.configure do |config|
+  config.stylesheets.clear
+  config.metadata = true
+
+  config.author      = "Avdi Grimm"
+  config.title       = "Hello World, The Book"
+  config.description = "The greatest book ever written"
+  config.language    = "en-US"
+  config.date        = "2013-08-01"
+end

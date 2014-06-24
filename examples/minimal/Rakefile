@@ -1,0 +1,5 @@
+require 'quarto/tasks'
+Quarto.configure do |config|
+  config.stylesheets.clear
+  config.metadata = false
+end

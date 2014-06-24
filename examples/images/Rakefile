@@ -1,0 +1,6 @@
+require 'quarto'
+Quarto.configure do |config|
+  config.clear_stylesheets
+  config.use :markdown
+  config.metadata = false
+end
