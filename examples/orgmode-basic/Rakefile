@@ -2,5 +2,8 @@ require 'quarto'
 
 Quarto.configure do |config|
   config.use :orgmode
+
+  # Note: this line is included for testing purposes. It shouldn't be needed in
+  # your Quarto projects.
   config.orgmode.emacs_load_path << ENV.fetch("VENDOR_ORG_MODE_DIR")
 end

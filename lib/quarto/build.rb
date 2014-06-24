@@ -212,8 +212,8 @@ module Quarto
       normal_doc = Nokogiri::XML.parse(SECTION_TEMPLATE)
       body_elt        = normal_doc.at_css("body")
       export_body_elt = doc.at_css("body")
-      export_content  = export_body_elt.children
-      fascicle_elt   = body_elt.add_child(
+      export_content  = export_body_elt && export_body_elt.children
+      fascicle_elt    = body_elt.add_child(
         normal_doc.create_element("div") do |elt|
           elt["class"]                 = "fascicle"
           elt["data-fascicle-source"] = export_file

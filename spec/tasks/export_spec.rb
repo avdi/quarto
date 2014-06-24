@@ -14,9 +14,7 @@ describe "rake export", golden: true do
 
   specify "with orgmode sources" do
     populate_from "examples/orgmode-basic"
-    env = {"VENDOR_ORG_MODE_DIR" => VENDOR_ORG_MODE_DIR}
-
-    run env, "rake export"
+    run "rake export"
 
     expect("build/exports/book.html").to match_master
   end

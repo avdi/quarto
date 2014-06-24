@@ -1,3 +1,3 @@
 # Hello, world
 
-This is the glorious intro
+This is the adequate intro
