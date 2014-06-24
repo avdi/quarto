@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
-require 'rake'
-require 'nokogiri'
-require 'open3'
-require 'digest/sha1'
-require 'etc'
-require 'fattr'
-require 'time'
-require 'erb'
-require 'quarto/font'
-require 'quarto/stylesheet_set'
+require "rake"
+require "nokogiri"
+require "open3"
+require "digest/sha1"
+require "etc"
+require "fattr"
+require "time"
+require "erb"
+require "quarto/font"
+require "quarto/stylesheet_set"
 require "pathname"
 require "ostruct"
 
 module Quarto
+
+  # TODO: For the love of all that is holy, refactor me!!!
   class Build
     include Rake::DSL
 

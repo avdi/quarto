@@ -171,7 +171,7 @@ module GoldenChild
     end
 
     def slug
-      name.downcase.tr_s("^a-z0-9", "-")[0..63]
+      name.downcase.tr_s("^a-z0-9", "-")[0..255]
     end
 
     # @return [Hash] editable env var hash, defaults to {#configuration}
