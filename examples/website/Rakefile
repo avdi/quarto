@@ -1,0 +1,6 @@
+require "quarto"
+
+Quarto.configure do |config|
+  config.use :markdown
+  config.use :site
+end

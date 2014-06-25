@@ -27,25 +27,6 @@ module SpecHelpers
   end
 end
 
-module TaskSpecHelpers
-  include FileUtils
-
-  def ocf_ns
-    "urn:oasis:names:tc:opendocument:xmlns:container"
-  end
-
-  def run(command)
-    @output, @status = Open3.capture2e(command)
-    unless @status.success?
-      raise "Command `#{command}` failed with output:\n#{@output}"
-    end
-  end
-
-  def contents(filename)
-    File.read(filename)
-  end
-end
-
 GoldenChild.configure do |config|
   config.env["VENDOR_ORG_MODE_DIR"] = VENDOR_ORG_MODE_DIR
   config.add_content_filter("*.xhtml", "**/content.opf") do |file_content|
@@ -62,21 +43,7 @@ RSpec.configure do |config|
   config.include SpecHelpers
   config.expose_current_running_example_as :example
 
-  config.after :each, task: true do |example|
-    # if example.exception
-    #   puts
-    #   puts
-    #   puts "==================== Task Output ===================="
-    #   puts @output
-    #   puts "==================== End Task Output ===================="
-    #   puts
-    #   puts
-    # end
-  end
-
   config.before :each do |example|
     @construct = example.metadata[:construct]
   end
-
-
 end

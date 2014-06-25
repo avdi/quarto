@@ -98,6 +98,8 @@ module GoldenChild
     # Unzip a zip file, and execute commands in the context of the unzipped
     # directory.
     #
+    # You must have the `unzip(1)` program installed for this to work.helper
+    #
     # @param [String, Pathname] relative_filename The path of the zip file
     def within_zip(relative_filename)
       relative_filename = Pathname(relative_filename)
