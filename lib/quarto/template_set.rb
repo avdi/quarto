@@ -1,5 +1,6 @@
 require "quarto/plugin"
 require "quarto/template"
+require "pathname"
 
 module Quarto
   class TemplateSet < Plugin
@@ -15,11 +16,15 @@ module Quarto
     end
 
     def define_tasks
+      rule %r(#{main.build_dir}/.*) => method(:find_template_deps_for) do |t|
+        generate_file_from_template(t.name, t.source,
+                                    root_dir: main.build_dir)
+      end
     end
 
     def generate_file_from_template(file, template,
                                     root_dir: main.build_dir,
-                                    layout: nil)
+                                    layout: true)
       template = Template.new(template, main)
       mkpath file.pathmap("%d")
       if template.final?
@@ -34,11 +39,13 @@ module Quarto
                         layout: nil,
                         ** locals,
                         &block)
-      layout_template =
-          layout &&
-              input.html? &&
-              Template.new(find_template_for("#{main.build_dir}/#{layout}"),
-                           main)
+      layout_file =
+        case layout
+        when true then find_layout_for(output)
+        when String then find_template_for("#{main.build_dir}/#{layout}")
+        else nil
+        end
+      layout_template = layout_file && Template.new(layout_file, main)
       if layout_template
         say "expand #{input.path} -> #{output} (layout: #{layout_template.path})"
       else
@@ -55,12 +62,38 @@ module Quarto
       end
     end
 
+    def find_template_deps_for(path)
+      find_template_for(path) { [] }
+    end
+
+    # Search upwards until we find a _layout.* file corresponding to `path`.
+    def find_layout_for(path)
+      ext = File.extname(path)
+      upwards_find_template_for(path.pathmap("%d/_layout#{ext}"))
+    end
+
+    # Search upwards until we find a template corresponding to target `path`.
+    def upwards_find_template_for(path)
+      path = Pathname(path)
+      base = path.basename
+      path.dirname.ascend do |dir|
+        if template = find_template_for((dir + base).to_s){nil}
+          return template
+        end
+        return nil if dir.to_s == main.build_dir
+      end
+      nil
+    end
+
     def find_template_for(path)
       logical_path = rel_path(path, main.build_dir)
-      find_user_template_for(logical_path) ||
-          find_system_template_for(logical_path) or
-          raise "No template found for resource #{path}"
+      template = find_user_template_for(logical_path) ||
+            find_system_template_for(logical_path)
+      template or if block_given? then yield
+                  else raise "No template found for resource #{path}"
+                  end
     end
+
 
     def find_user_template_for(path)
       FileList["#{user_template_dir}/#{path}*"].first

@@ -22,17 +22,17 @@ module Quarto
       end
     end
 
-    attr_reader :bower_deps, :resources
+    attr_reader :resources
 
     def initialize(*)
       super
-      @bower_deps = []
       @resources  = []
       add_resource "index.html"
     end
 
     def enhance_build(build)
       build.require_plugin(:template_set)
+      build.require_plugin(:bower)
       build.extend(BuildExt)
       build.site = self
     end
@@ -77,23 +77,6 @@ module Quarto
             task.invoke
           end
         end
-
-        namespace :bower do
-          desc "Install Bower dependencies"
-          task :install => [bower_config_file, bower_package_file] do
-            bower_deps.each do |dep|
-              cd site_dir do
-                sh "bower install -S #{dep}"
-              end
-            end
-          end
-        end
-
-        rule %r(#{site_dir}/.*) => templates.method(:find_template_for) do |t|
-          templates.generate_file_from_template(t.name, t.source,
-                                                root_dir: site_dir,
-                                                layout:   default_layout)
-        end
       end
 
     end
@@ -120,10 +103,6 @@ module Quarto
       "site/_layout.html"
     end
 
-    def add_bower_dep(package)
-      bower_deps << package
-    end
-
     def site_dir
       "#{main.build_dir}/site"
     end
@@ -132,14 +111,6 @@ module Quarto
 
     def site_fascicle_dir
       "#{site_dir}/fascicles"
-    end
-
-    def bower_config_file
-      "#{site_dir}/.bowerrc"
-    end
-
-    def bower_package_file
-      "#{site_dir}/bower.json"
     end
 
     def site_fascicle_path(fascicle)
@@ -158,7 +129,6 @@ module Quarto
       # TODO: Dingdingding feature envy!!!
       template = templates.make_template(fascicle_template_path)
       templates.expand_template(template, path,
-                                root_dir: site_dir,
                                 fascicle: fascicle,
                                 layout: default_layout) do
         content.to_html
