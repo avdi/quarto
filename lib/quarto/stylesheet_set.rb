@@ -79,7 +79,7 @@ module Quarto
       end
 
       file var_file => main.build_dir do |t|
-        puts "write #{t.name}"
+        say "write #{t.name}"
         open(t.name, 'w') do |f|
           write_scss_variables(f, variables)
         end
