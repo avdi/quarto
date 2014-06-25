@@ -24,7 +24,7 @@ module Quarto
         desc "Install Bower dependencies"
         task :install => [config_file, package_file] do
           deps.each do |dep|
-            cd site_dir do
+            cd main.build_dir do
               sh "bower install -S #{dep}"
             end
           end
