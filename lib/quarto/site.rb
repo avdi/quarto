@@ -30,6 +30,7 @@ module Quarto
     end
 
     def enhance_build(build)
+      build.require_plugin(:template_set)
       build.extend(BuildExt)
       build.site = self
     end

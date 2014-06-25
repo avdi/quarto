@@ -96,12 +96,17 @@ module Quarto
     end
 
     def use(plugin_name, *args, &block)
-      require "quarto/#{plugin_name}"
-      plugin_class_name = plugin_name.to_s.split("_").map{|w| w.capitalize}.join
-      plugin_class = Quarto.const_get(plugin_class_name)
+      plugin_class = find_plugin_class(plugin_name)
       plugin = plugin_class.new(self, *args, &block)
       plugin.enhance_build(self)
       plugins[plugin_name.to_sym] = plugin
+    end
+
+    def find_plugin_class(plugin_name)
+      require "quarto/#{plugin_name}"
+      plugin_class_name =
+          plugin_name.to_s.split("_").map { |w| w.capitalize }.join
+      Quarto.const_get(plugin_class_name)
     end
 
     def add_font(family, options={})
@@ -533,6 +538,15 @@ module Quarto
 
     def say(*messages)
       $stderr.puts(*messages) if verbose
+    end
+
+    # Require a plugin to be loaded and added. This is mainly for the use of
+    # other plugins. If you want to add a plugin to your project,
+    # invoke{#use} directly.
+    def require_plugin(plugin_name)
+      return if plugins.key?(plugin_name.to_sym)
+      plugin_class = find_plugin_class(plugin_name)
+      use(plugin_name)
     end
 
     private
