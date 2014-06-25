@@ -3,11 +3,15 @@ require "tilt"
 
 module Quarto
   class Template
-    RenderContext = Struct.new(:build, :layout) do
-      def render(resource, **locals, &block)
-        path     = "#{build.site.site_dir}/#{resource}"
-        template = Template.new(build.site.find_template_for(path))
-        template.render(build, render_context: self, **locals, &block)
+    RenderContext = Struct.new(:build, :layout, :root_dir) do
+      def render(template, **locals, &block)
+        path     = "#{root_dir}/#{template}"
+        template = Template.new(build.templates.find_template_for(path))
+        template.render(build,
+                        root_dir: root_dir,
+                        render_context: self,
+                        **locals,
+                        &block)
       end
     end
 
@@ -43,13 +47,17 @@ module Quarto
     def render(
         build,
         layout:         nil,
-        render_context: RenderContext.new(build, layout),
+        root_dir:,
+        render_context: RenderContext.new(build, layout, root_dir),
         **locals,
         &block)
       tilt_template = Tilt.new(path, format: :html5, pretty: true)
       content       = tilt_template.render(render_context, locals, &block)
       if layout
-        layout.render(build, render_context: render_context, **locals) do
+        layout.render(build,
+                      root_dir: root_dir,
+                      render_context: render_context,
+                      **locals) do
           content
         end
       else

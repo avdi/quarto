@@ -178,18 +178,6 @@ module Quarto
       send("export_from_#{format}", export_file, source_file)
     end
 
-    def template_dir
-      "templates"
-    end
-
-    def template_build_dir
-      "#{build_dir}/template_expansions"
-    end
-
-    def system_template_dir
-      File.expand_path("../../../templates", __FILE__)
-    end
-
     def section_dir
       "#{build_dir}/sections"
     end
