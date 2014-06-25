@@ -6,7 +6,7 @@ module Quarto
     RenderContext = Struct.new(:build, :layout, :root_dir) do
       def render(template, **locals, &block)
         path     = "#{root_dir}/#{template}"
-        template = Template.new(build.templates.find_template_for(path))
+        template = Template.new(build.templates.find_template_for(path), build)
         template.render(build,
                         root_dir: root_dir,
                         render_context: self,
@@ -19,8 +19,9 @@ module Quarto
 
     attr_reader :path
 
-    def initialize(path)
-      @path = path
+    def initialize(path, build)
+      @path  = path
+      @build = build
     end
 
     def to_path
@@ -47,7 +48,7 @@ module Quarto
     def render(
         build,
         layout:         nil,
-        root_dir:,
+        root_dir: build.build_dir,
         render_context: RenderContext.new(build, layout, root_dir),
         **locals,
         &block)

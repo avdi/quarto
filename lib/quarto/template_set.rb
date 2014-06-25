@@ -20,7 +20,7 @@ module Quarto
     def generate_file_from_template(file, template,
                                     root_dir: main.build_dir,
                                     layout: nil)
-      template = Template.new(template)
+      template = Template.new(template, main)
       mkpath file.pathmap("%d")
       if template.final?
         cp template, file
@@ -37,7 +37,8 @@ module Quarto
       layout_template =
           layout &&
               input.html? &&
-              Template.new(find_template_for("#{main.build_dir}/#{layout}"))
+              Template.new(find_template_for("#{main.build_dir}/#{layout}"),
+                           main)
       if layout_template
         say "expand #{input.path} -> #{output} (layout: #{layout_template.path})"
       else
@@ -70,7 +71,7 @@ module Quarto
     end
 
     def make_template(path)
-      Template.new(path)
+      Template.new(path, main)
     end
 
     def system_template_dir
