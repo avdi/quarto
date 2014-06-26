@@ -1,3 +1,5 @@
+[![PullReview stats](https://www.pullreview.com/github/avdi/quarto/badges/master.svg?)](https://www.pullreview.com/github/avdi/quarto/reviews/master)
+
 # Quarto
 
 Yet another ebook generation toolchain, biased towards writing books about programming.
