@@ -10,6 +10,8 @@ module Quarto
       attr_accessor :templates
     end
 
+    UNMET_DEPENDENCY = ["<<DOESNOTEXIST>>"]
+
     def enhance_build(build)
       build.extend(BuildExt)
       build.templates = self
@@ -63,6 +65,7 @@ module Quarto
     end
 
     def find_template_deps_for(path)
+      return UNMET_DEPENDENCY if dependency_blacklist.include?(path)
       find_template_for(path) { [] }
     end
 
@@ -85,6 +88,11 @@ module Quarto
       nil
     end
 
+    # Look up the path of a template corresponding to the given target path.
+    # Favors user templates over system templates.
+    #
+    # @yield if no template is found
+    # @raise [RuntimeError] if no template is found and no block provided
     def find_template_for(path)
       logical_path = rel_path(path, main.build_dir)
       template = find_user_template_for(logical_path) ||
@@ -107,6 +115,10 @@ module Quarto
       Template.new(path, main)
     end
 
+    def do_not_generate_deps_for(path)
+      self.dependency_blacklist << path
+    end
+
     def user_template_dir
       template_dir
     end
@@ -121,6 +133,10 @@ module Quarto
 
     def system_template_dir
       File.expand_path("../../../templates", __FILE__)
+    end
+
+    def dependency_blacklist
+      @dependency_blacklist ||= []
     end
   end
 end
