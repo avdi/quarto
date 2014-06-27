@@ -107,10 +107,6 @@ module Quarto
       Template.new(path, main)
     end
 
-    def system_template_dir
-      main.system_template_dir
-    end
-
     def user_template_dir
       template_dir
     end
