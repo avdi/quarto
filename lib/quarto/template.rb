@@ -52,7 +52,7 @@ module Quarto
         render_context: RenderContext.new(build, layout, root_dir),
         **locals,
         &block)
-      tilt_template = Tilt.new(path, format: :html5, pretty: true)
+      tilt_template = Tilt.new(path, **tilt_template_options(path))
       content       = tilt_template.render(render_context, locals, &block)
       if layout
         layout.render(build,
@@ -64,6 +64,20 @@ module Quarto
       else
         content
       end
+    end
+
+    def tilt_template_options(path)
+      case path.pathmap("%x")
+      when ".slim" then {format: :html5, pretty: true}
+      when ".scss" then scss_options
+      else {}
+      end
+    end
+
+    def scss_options
+      {
+          load_paths: [@build.stylesheets.templates_dir]
+      }
     end
   end
 end
