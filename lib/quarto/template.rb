@@ -1,5 +1,8 @@
 require "quarto/path_helpers"
 require "tilt"
+require "slim"
+
+Tilt.register(Slim::Template, "slim")
 
 module Quarto
   class Template
@@ -37,8 +40,8 @@ module Quarto
     end
 
     def final?
-      tilt_templates = Tilt.templates_for(path)
-      tilt_templates.empty? || tilt_templates == [Tilt::PlainTemplate]
+      tilt_template = Tilt[path]
+      tilt_template.nil? || tilt_template == Tilt::PlainTemplate
     end
 
     def html?

@@ -28,8 +28,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency "dotenv", "~> 0.8.0"
   spec.add_dependency "netrc", "~> 0.7.7"
   spec.add_dependency "naught", "~>1.0"
-  spec.add_dependency "tilt", "~> 2.0"
+  spec.add_dependency "tilt", "~> 1.4"
   spec.add_dependency "slim", "~> 2.0"
+  spec.add_dependency "sprockets", "~> 2.12"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rspec", "~> 3.0"
