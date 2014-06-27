@@ -7,8 +7,14 @@ require "golden_child"
 command = ARGV.shift
 
 options = OptionParser.new do |o|
-  o.banner = "Usage: #{o.program_name} COMMAND [options]\n\n" +
-      "Commands: accept, remove/rm/delete"
+  o.banner = <<EOF
+Usage: #{o.program_name} COMMAND [options]
+
+Available commands:
+
+  accept                - Save a result as the gold master
+  remove (rm, delete)   - Remove a gold master
+EOF
 end
 
 begin
@@ -23,7 +29,7 @@ begin
     end
     GoldenChild.accept(*filenames)
   when "remove", "rm", "delete"
-    options.banner = "Usage: #{options.program_name} rm PATH_OR_SHORTCODE"
+    options.banner = "Usage: #{options.program_name} rm PATH_OR_SHORTCODE..."
     options.parse!
     filenames = ARGV.to_a
     if filenames.empty?
