@@ -13,15 +13,6 @@ module Quarto
       attr_accessor :site
     end
 
-    class ResourceTemplateFinder
-      def initialize(site)
-        @site = site
-      end
-
-      def call(resource)
-      end
-    end
-
     attr_reader :resources
 
     def initialize(*)
