@@ -29,26 +29,26 @@ module Quarto
     }
 
     SIGNATURE_TEMPLATE = <<-EOF
-  <!DOCTYPE html>
-  <html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-      <title></title>
-    </head>
-    <body>
-    </body>
-  </html>
+      <!DOCTYPE html>
+      <html xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+          <title></title>
+        </head>
+        <body>
+        </body>
+      </html>
     EOF
 
     SPINE_TEMPLATE = <<-EOF
-  <!DOCTYPE html>
-  <html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-      <title>Untitled Book</title>
-      <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"/>
-    </head>
-    <body>
-    </body>
-  </html>
+      <!DOCTYPE html>
+      <html xmlns="http://www.w3.org/1999/xhtml">
+        <head>
+          <title>Untitled Book</title>
+          <link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"/>
+        </head>
+        <body>
+        </body>
+      </html>
     EOF
 
     fattr :verbose => true
@@ -78,14 +78,17 @@ module Quarto
     fattr(:bitmap_cover_image) { nil }
     fattr(:vector_cover_image) { nil }
     fattr(:toplevel_classes) {
-      %W[chapter] | nonchapter_classes
+      mainmatter_classes | nonchapter_classes
     }
     fattr(:frontmatter_classes) {
       %W[frontcover halftitlepage titlepage imprint dedication foreword
-         toc preface]
+         toc preface introduction]
     }
     fattr(:backmatter_classes) {
       %W[references appendix bibliography glossary index colophon backcover]
+    }
+    fattr(:mainmatter_classes) {
+      %W[chapter]
     }
     fattr(:nonchapter_classes) {
       frontmatter_classes | backmatter_classes
@@ -216,8 +219,8 @@ module Quarto
       export_content  = export_body_elt && export_body_elt.xpath("section")
       if export_content.empty?
         chapter_contents = export_body_elt.children.dup
-        export_content = manufacture_chapter(chapter_contents, normal_doc,
-                                             title)
+        export_content   = manufacture_chapter(chapter_contents, normal_doc,
+                                               title)
       end
       source_file   =
           FileList[export_file.pathmap("%{^#{export_dir}/,}X.*")].first
@@ -319,6 +322,19 @@ module Quarto
       (element["class"].split & toplevel_classes).first || "item"
     end
 
+    def region_for_toplevel_type(toplevel_type)
+      case toplevel_type
+      when *frontmatter_classes then
+        "frontmatter"
+      when *backmatter_classes then
+        "backmatter"
+      when *mainmatter_classes then
+        "mainmatter"
+      else
+        fail ArgumentError, "Unknown type #{toplevel_type}"
+      end
+    end
+
     def name_from_title(title)
       title.downcase.tr_s("^a-z0-9", " ").strip.tr(" ", "-")
     end
@@ -401,10 +417,16 @@ module Quarto
       update_signature_elements(proto_doc)
       update_toplevel_elements(proto_doc)
       update_heading_elements(proto_doc)
+      number_chapters(proto_doc)
       open(codex_file, "w") do |f|
         proto_doc.write_xml_to(f)
       end
+    end
 
+    def number_chapters(doc)
+      doc.css("section.chapter").each_with_index do |chap_elt, index|
+        chap_elt["data-chapter-number"] = index + 1
+      end
     end
 
     def skeleton_file
@@ -518,15 +540,18 @@ module Quarto
     end
 
     def update_toplevel_elements(doc)
+      toplevel_number = 1
       doc.css(".signature").each do |sig_elt|
         fasc_file = sig_elt["data-fascicle"]
         sig_num = sig_elt["data-number"] or fail "Signature is not numbered"
         sig_elt.css("section.toplevel").each_with_index do |top_elt, index|
-          number                   = index + 1
-          type                     = toplevel_type_from_element(top_elt)
-          top_elt["id"]            = "signature-#{sig_num}-#{type}-#{index}"
-          top_elt["data-number"]   = number
-          top_elt["data-fascicle"] = fasc_file
+          number                          = index + 1
+          type                            = toplevel_type_from_element(top_elt)
+          top_elt["id"]                   = "toplevel-#{toplevel_number}"
+          top_elt["data-number"]          = number
+          top_elt["data-fascicle"]        = fasc_file
+          top_elt["data-toplevel-number"] = toplevel_number
+          toplevel_number                 += 1
         end
       end
     end
@@ -732,8 +757,66 @@ module Quarto
       "#{build_dir}/structure.yaml"
     end
 
-    def generate_structure_file(file)
-      File.write(file, YAML.dump({book: {children: []}}))
+    def create_structure_file(file)
+      File.write(file, YAML.dump(book_structure))
+    end
+
+    # Memoized form of {#get_book_structure}
+    def book_structure
+      @book_structure ||= get_book_structure
+    end
+
+    # @return [Hash] a comprehensive, semi-denormalized data structure
+    #   representing the logical structure of the book.
+    def get_book_structure
+      root                  = {}
+      root["title"]         = title
+      root["authors"]       = authors
+      root["author"]        = authors.join(", ")
+      root["description"]   = description
+      root["date"]          = date
+      root["types"]         = ["book"]
+      root["master_file"]   = master_file
+      root["codex_file"]    = codex_file
+      root["spine_file"]    = spine_file
+      root["skeleton_file"] = skeleton_file
+      root["base_dir"]      = Dir.pwd
+      root["children"]      = []
+      open(master_file) do |f|
+        doc = Nokogiri::XML(f)
+        doc.css(".signature").each do |sig_elt|
+          root['children'] << signature = {}
+          signature['types'] = ["signature"]
+          signature['id']    = sig_elt["id"]
+          signature.merge!(data_atttributes_to_hash(sig_elt))
+          signature["children"] = []
+          sig_elt.css("section.toplevel").each do |top_elt|
+            signature["children"] << toplevel = {}
+            toplevel_type     = toplevel_type_from_element(top_elt)
+            region            = region_for_toplevel_type(toplevel_type)
+            toplevel["types"] = ["toplevel", region, toplevel_type]
+            toplevel["id"]    = top_elt["id"]
+            toplevel.merge!(data_atttributes_to_hash(top_elt))
+          end
+        end
+      end
+      root
+    end
+
+    def data_atttributes_to_hash(element)
+      element.attributes.keys.each_with_object({}) { |key, h|
+        if (md = /\Adata-(.*)/.match(key))
+          attr_name        = md[1]
+          structure_key    = attr_name.tr("-", "_")
+          value            = case attr_name
+                             when /\bnumber\z/ # ends with "number"
+                               Integer(element[key])
+                             else
+                               element[key]
+                             end
+          h[structure_key] = value
+        end
+      }
     end
 
     def define_main_tasks
@@ -767,7 +850,7 @@ module Quarto
       task :structure => structure_file
 
       file structure_file => ["fascicles"] do
-        generate_structure_file(structure_file)
+        create_structure_file(structure_file)
       end
 
       file fascicle_manifest => master_file do

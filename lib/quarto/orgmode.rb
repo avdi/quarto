@@ -130,7 +130,7 @@ END
         end
         normal_doc.css("div.imprint h2").remove
         normal_doc.css("div.dedication h2").remove
-        normalize_document_structure(normal_doc)
+        # normalize_document_structure(normal_doc)
         promote_headings(normal_doc)
       end
     end

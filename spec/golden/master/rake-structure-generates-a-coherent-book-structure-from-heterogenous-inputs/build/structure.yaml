@@ -1,0 +1,188 @@
+---
+title: Untitled Book
+authors:
+- Avdi Grimm
+author: Avdi Grimm
+description: ''
+date: '2014-06-30T14:45:13-04:00'
+types:
+- book
+master_file: build/master/master.xhtml
+codex_file: build/codex.xhtml
+spine_file: build/spine.xhtml
+skeleton_file: build/skeleton.xhtml
+base_dir: "/home/avdi/dev/quarto/spec/golden/actual/rake-structure-generates-a-coherent-book-structure-from-heterogenous-inputs"
+children:
+- types:
+  - signature
+  id: signature-1
+  signature_export: build/exports/foreward.html
+  signature_source: foreward.markdown
+  signature_file: build/signatures/foreward.xhtml
+  signature_name: foreward
+  signature_title: The Foreword
+  name: foreward
+  title: The Foreword
+  signature_number: 1
+  number: 1
+  fascicle: build/fascicles/001-foreward.xhtml
+  children:
+  - types:
+    - toplevel
+    - frontmatter
+    - foreword
+    id: toplevel-1
+    title: The Foreword
+    name: the-foreword
+    number: 1
+    fascicle: build/fascicles/001-foreward.xhtml
+    toplevel_number: 1
+- types:
+  - signature
+  id: signature-2
+  signature_export: build/exports/preface.html
+  signature_source: preface.markdown
+  signature_file: build/signatures/preface.xhtml
+  signature_name: preface
+  signature_title: The Preface
+  name: preface
+  title: The Preface
+  signature_number: 2
+  number: 2
+  fascicle: build/fascicles/002-preface.xhtml
+  children:
+  - types:
+    - toplevel
+    - frontmatter
+    - preface
+    id: toplevel-2
+    title: The Preface
+    name: the-preface
+    number: 1
+    fascicle: build/fascicles/002-preface.xhtml
+    toplevel_number: 2
+- types:
+  - signature
+  id: signature-3
+  signature_export: build/exports/ch1.html
+  signature_source: ch1.markdown
+  signature_file: build/signatures/ch1.xhtml
+  signature_name: ch1
+  signature_title: Chapter 1
+  name: ch1
+  title: Chapter 1
+  signature_number: 3
+  number: 3
+  fascicle: build/fascicles/003-ch1.xhtml
+  children:
+  - types:
+    - toplevel
+    - mainmatter
+    - chapter
+    id: toplevel-3
+    title: Chapter 1
+    name: chapter-1
+    number: 1
+    fascicle: build/fascicles/003-ch1.xhtml
+    toplevel_number: 3
+    chapter_number: 1
+- types:
+  - signature
+  id: signature-4
+  signature_export: build/exports/ch2.html
+  signature_source: ch2.html
+  signature_file: build/signatures/ch2.xhtml
+  signature_name: ch2
+  signature_title: This the title of ch2.org
+  name: ch2
+  title: This the title of ch2.org
+  signature_number: 4
+  number: 4
+  fascicle: build/fascicles/004-ch2.xhtml
+  children:
+  - types:
+    - toplevel
+    - mainmatter
+    - chapter
+    id: toplevel-4
+    title: Chapter 2
+    name: chapter-2
+    number: 1
+    fascicle: build/fascicles/004-ch2.xhtml
+    toplevel_number: 4
+    chapter_number: 2
+- types:
+  - signature
+  id: signature-5
+  signature_export: build/exports/ch3-implicit.html
+  signature_source: ch3-implicit.markdown
+  signature_file: build/signatures/ch3-implicit.xhtml
+  signature_name: ch3-implicit
+  signature_title: Title of Chapter 3
+  name: ch3-implicit
+  title: Title of Chapter 3
+  signature_number: 5
+  number: 5
+  fascicle: build/fascicles/005-ch3-implicit.xhtml
+  children:
+  - types:
+    - toplevel
+    - mainmatter
+    - chapter
+    id: toplevel-5
+    title: Title of Chapter 3
+    name: title-of-chapter-3
+    number: 1
+    fascicle: build/fascicles/005-ch3-implicit.xhtml
+    toplevel_number: 5
+    chapter_number: 3
+- types:
+  - signature
+  id: signature-6
+  signature_export: build/exports/ch4-implicit.html
+  signature_source: ch4-implicit.org
+  signature_file: build/signatures/ch4-implicit.xhtml
+  signature_name: ch4-implicit
+  signature_title: Title of Chapter 4
+  name: ch4-implicit
+  title: Title of Chapter 4
+  signature_number: 6
+  number: 6
+  fascicle: build/fascicles/006-ch4-implicit.xhtml
+  children:
+  - types:
+    - toplevel
+    - mainmatter
+    - chapter
+    id: toplevel-6
+    title: Title of Chapter 4
+    name: title-of-chapter-4
+    number: 1
+    fascicle: build/fascicles/006-ch4-implicit.xhtml
+    toplevel_number: 6
+    chapter_number: 4
+- types:
+  - signature
+  id: signature-7
+  signature_export: build/exports/subdir/ch5.html
+  signature_source: subdir/ch5.markdown
+  signature_file: build/signatures/subdir/ch5.xhtml
+  signature_name: ch5
+  signature_title: Chapter 5
+  name: ch5
+  title: Chapter 5
+  signature_number: 7
+  number: 7
+  fascicle: build/fascicles/007-ch5.xhtml
+  children:
+  - types:
+    - toplevel
+    - mainmatter
+    - chapter
+    id: toplevel-7
+    title: Chapter 5
+    name: chapter-5
+    number: 1
+    fascicle: build/fascicles/007-ch5.xhtml
+    toplevel_number: 7
+    chapter_number: 5

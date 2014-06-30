@@ -7,6 +7,6 @@ describe "rake structure", golden: true do
     run "rake structure"
 
     expect("build/master/master.xhtml").to match_master
-    # expect("build/structure.yaml").to match_master
+    expect("build/structure.yaml").to match_master
   end
 end

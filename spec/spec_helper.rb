@@ -42,6 +42,9 @@ GoldenChild.configure do |config|
     file_content.gsub(/\d{4}-\d{2}-\d{2} \w{3} \d{2}:\d{2}/,
                       "1970-01-01 Tue 00:00")
   end
+  config.add_content_filter("**/*") do |file_content|
+    file_content.gsub(File.expand_path("../..", __FILE__), "/DEVDIR")
+  end
 end
 
 RSpec.configure do |config|
