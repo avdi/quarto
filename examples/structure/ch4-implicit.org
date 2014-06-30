@@ -1,0 +1,8 @@
+#+TITLE: Title of Chapter 4
+#+AUTHOR: Crow T. Robot
+#+DATE: July 5, 2014
+#+DESCRIPTION: Chapter 4 is the best chapter since chapter 3.
+
+* First heading of chapter 4
+
+This chapter is not explicitly marked as a chapter with an org-mode property.

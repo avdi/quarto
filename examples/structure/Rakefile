@@ -1,0 +1,20 @@
+require 'quarto'
+
+Quarto.configure do |config|
+  config.use :orgmode
+  config.use :markdown
+
+  # Note: this line is included for testing purposes. It shouldn't be needed in
+  # your Quarto projects.
+  config.orgmode.emacs_load_path << ENV.fetch("VENDOR_ORG_MODE_DIR")
+
+  config.source_files = [
+    "foreward.markdown",
+    "preface.markdown",
+    "ch1.markdown",
+    "ch2.org",
+    "ch3-implicit.markdown",
+    "ch4-implicit.org",
+    "subdir/ch5.markdown",
+  ]
+end

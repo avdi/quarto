@@ -37,6 +37,11 @@ GoldenChild.configure do |config|
     urn_pattern = /urn:uuid:[[:alnum:]-]+/
     file_content.gsub(urn_pattern, "urn:uuid:FAKE-FAKE-FAKE")
   end
+  # 2014-06-29 Sun 23:30
+  config.add_content_filter("*.xhtml") do |file_content|
+    file_content.gsub(/\d{4}-\d{2}-\d{2} \w{3} \d{2}:\d{2}/,
+                      "1970-01-01 Tue 00:00")
+  end
 end
 
 RSpec.configure do |config|

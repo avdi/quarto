@@ -116,7 +116,7 @@ module Quarto
       fasc_doc = open(fascicle.path) do |f|
         Nokogiri::XML(f)
       end
-      content  = fasc_doc.at_css("div.fascicle").children
+      content  = fasc_doc.at_css("div.signature").children
       # TODO: Dingdingding feature envy!!!
       template = templates.make_template(fascicle_template_path)
       templates.expand_template(template, path,

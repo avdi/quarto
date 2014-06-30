@@ -9,7 +9,7 @@ describe "rake export", golden: true do
     run "rake export"
 
     expect(%W[build/exports/intro.html
-              build/exports/section1/ch1.html]).to match_master
+              build/exports/part1/ch1.html]).to match_master
   end
 
   specify "with orgmode sources" do

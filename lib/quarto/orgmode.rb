@@ -6,7 +6,7 @@ module Quarto
     ORG_EXPORT_ASYNC     = "nil"
     ORG_EXPORT_SUBTREE   = "nil"
     ORG_EXPORT_VISIBLE   = "nil"
-    ORG_EXPORT_BODY_ONLY = "t"
+    ORG_EXPORT_BODY_ONLY = "nil"
     ORG_EXPORT_ELISP     = <<END
 (progn
   (setq org-html-htmlize-output-type 'css)
@@ -103,7 +103,9 @@ END
     end
 
     def normalize_orgmode_export(export_file, section_file)
-      main.normalize_generic_export(export_file, section_file) do |normal_doc|
+      main.normalize_generic_export(export_file, section_file,
+                                    before: method(:pre_normalize)) do
+      |normal_doc|
         listing_pre_elts = normal_doc.css("div.org-src-container > pre.src")
         listing_pre_elts.each do |elt|
           language = elt["class"].split.grep(/^src-(.*)$/) do
@@ -131,6 +133,15 @@ END
         normalize_document_structure(normal_doc)
         promote_headings(normal_doc)
       end
+    end
+
+    def pre_normalize(doc)
+      content_elt = doc.at_css("div#content")
+      if content_elt
+        doc.at_css("body").children = content_elt.children
+      end
+      title_h1 = doc.at_css("h1.title")
+      title_h1.remove if title_h1
     end
 
     def normalize_document_structure(doc)
