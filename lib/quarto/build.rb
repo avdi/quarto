@@ -536,6 +536,7 @@ module Quarto
         signature_elt["data-number"]           = number
         signature_elt["id"]                    = "signature-#{number}"
         signature_elt["data-fascicle"]         = fascicle_file(name, number)
+        signature_elt["data-numbered-name"]    = numbered_name(name, number)
       end
     end
 
@@ -602,10 +603,8 @@ module Quarto
         fasc_doc.at_css("title").content = title
         mkpath path.pathmap("%d")
         open(path, "w") do |f|
-          format_xml(f) do |format_input|
-            say "write #{path}"
-            fasc_doc.write_xml_to(format_input)
-          end
+          say "write #{path}"
+          fasc_doc.write_xml_to(f)
         end
         paths << path
       }
@@ -618,8 +617,12 @@ module Quarto
     end
 
     def fascicle_file(name, number)
-      filename = "%03d-%s.xhtml" % [number, name]
+      filename = numbered_name(name, number) + ".xhtml"
       "#{fascicle_dir}/#{filename}"
+    end
+
+    def numbered_name(name, number)
+      "%03d-%s" % [number, name]
     end
 
     def fascicles
@@ -712,6 +715,10 @@ module Quarto
       use(plugin_name)
     end
 
+    def structure_file
+      "#{build_dir}/structure.yaml"
+    end
+
     private
 
     def format_xml(output_io)
@@ -753,11 +760,8 @@ module Quarto
       ["xmllint", *xmlflags, *args]
     end
 
-    def structure_file
-      "#{build_dir}/structure.yaml"
-    end
-
     def create_structure_file(file)
+      say "create #{file}"
       File.write(file, YAML.dump(book_structure))
     end
 
