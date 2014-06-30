@@ -289,17 +289,17 @@ a.footnote {
   padding-right: 0.4em;
 }
 
-div.frontcover img {
+.frontcover img {
   left: 0; top: 0;
   z-index: -1;
 }
 
-div.frontcover h1 {
+.frontcover h1 {
   color: white;
   font-weight: normal;
 }
 
-div.frontcover h2 {
+.frontcover h2 {
   color: black;
   background: white;
   font-weight: normal;
@@ -307,12 +307,12 @@ div.frontcover h2 {
   letter-spacing: 0.15em;
 }
 
-div.frontcover h3 {
+.frontcover h3 {
   color: white;
   font-weight: normal;
 }
 
-div.frontcover p {
+.frontcover p {
   color: black;
   font-weight: bold;
   text-transform: uppercase;
@@ -321,13 +321,13 @@ div.frontcover p {
 
 /* titlepage, halftitlepage */
 
-div.titlepage h1, div.halftitlepage h1 { margin-bottom: 2em; }
-div.titlepage h2, div.halftitlepage h2 { 
+.titlepage h1, .halftitlepage h1 { margin-bottom: 2em; }
+.titlepage h2, .halftitlepage h2 { 
   font-size: 1.2em; 
   margin-bottom: 3em; 
 }
-div.titlepage h3, div.halftitlepage h3 { font-size: 1em; margin-bottom: 3em; }
-div.titlepage p, div.halftitlepage p {
+.titlepage h3, .halftitlepage h3 { font-size: 1em; margin-bottom: 3em; }
+.titlepage p, .halftitlepage p {
   font-size: 1.4em;
   font-weight: bold;
   margin: 0; 
@@ -355,7 +355,7 @@ section.chapter h1::before {
   content: "Chapter " counter(chapter) " \A";
 }
 
-div.frontcover h1::before, div.titlepage h1::before, div.halftitlepage h1::before {
+.frontcover h1::before, .titlepage h1::before, .halftitlepage h1::before {
   content: normal;                  /* that is, none */
 }
 
@@ -374,7 +374,7 @@ section.chapter h2 {
   string-set: header "Section " counter(chapter) "." counter(section) ": " content(); 
 }
 
-div.frontcover h1::before, div.titlepage h1::before, div.halftitlepage h1::before {
+.frontcover h1::before, .titlepage h1::before, .halftitlepage h1::before {
   content: normal;                  /* that is, none */
 }
 
@@ -408,7 +408,7 @@ pre {
   page-break-inside: avoid;
 }
 
-div.imprint {
+.imprint {
   .title {
     font-size: 2.5em;
     font-weight: 900;
@@ -437,8 +437,8 @@ div.imprint {
 }
 
 @media screen, handheld {
-  div.frontcover, div.halftitlepage, div.titlepage, div.imprint,
-  div.dedication, div.foreword, div.toc, div.index { display: none }
+  .frontcover, .halftitlepage, .titlepage, .imprint,
+  .dedication, .foreword, .toc, .index { display: none }
 }
 
 

@@ -137,25 +137,25 @@
   @bottom-right { content: normal }
 }
 
-div.halftitlepage, div.titlepage, div.imprint, div.dedication { page: blank }
-div.foreword, div.toc, #TOC, div.preface { page: frontmatter }
+.halftitlepage, .titlepage, .imprint, .dedication { page: blank }
+.foreword, .toc, #TOC, .preface { page: frontmatter }
 
 /* page breaks */
 
-div.frontcover, div.halftitlepage, div.titlepage { 
+.frontcover, .halftitlepage, .titlepage { 
   page-break-before: right ;
 }
 
-div.imprint {
+.imprint {
   page-break-before: always;
 }
 
-div.dedication, div.foreword, div.toc, div.preface, section.chapter, div.reference,
-div.appendix, div.bibliography, div.glossary, div.index, div.colophon, section.chapter {
+.dedication, .foreword, .toc, .preface, section.chapter, .reference,
+.appendix, .bibliography, .glossary, .index, .colophon, section.chapter {
   page-break-before: always
 }
 
-div.backcover {
+.backcover {
   page-break-before: left;
   page: cover;
   position: absolute;
@@ -165,7 +165,7 @@ div.backcover {
   z-index: -1;
 }
 
-div.frontcover {
+.frontcover {
   page: cover;
   background-repeat: no-repeat;
   background-position: center center;
@@ -185,4 +185,4 @@ div.frontcover {
   }
 }
 
-div.white_page { page: cover; }
+.white_page { page: cover; }
