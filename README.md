@@ -166,7 +166,7 @@ By default Quarto seeks out source files with extensions it knows about. Alterna
 
 ```ruby
 Quarto.configure do |config|
-  config.source_files = [
+  config.source_files << [
     "ch1.md",
     "subdir/ch3.org"
   ]
