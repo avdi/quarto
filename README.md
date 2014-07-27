@@ -41,14 +41,46 @@ Quarto depends on several external programs which you will need to install befor
 
 ## Getting Started
 
-1. Install the gem (`gem install quarto`)
-2. Create a `Rakefile` in your book project root, with the following content:
-    
+*Note*: Quarto is availble as a Ruby gem, which you can install in the
+usual way (`gem install quarto`). But while the gem provides
+stability, it is laughably out of date. Indeed, installing the gem
+(instead of pointing to a GitHub repository) almost guarantees that
+these instructions will not work.
+
+1. Create a new directory, in which your book project will reside:
+
+	`mkdir mybook`
+   
+2. Inside of the directory, create a `Rakefile`, containing the
+   following:
+
     ```ruby
     require 'quarto/tasks'
     ```
-3. Run `rake -T` to see the available tasks.
-4. The task you care about is probably `rake deliverables`. (This is    also the default)
+
+	This `Rakefile` is what you will use to run Quarto's Rake tasks,
+    which are what you will use to create and publish your book.
+
+3. Now create a `Gemfile`. This will be used by
+   [Bundler](ttp://bundler.io) to install the required Ruby gems,
+   including Quarto. The `Gemfile` should look, at a minimum, like
+   this:
+
+    ```ruby
+    gem 'rake'
+    gem 'quarto', github: 'avdi/quarto'
+    ```
+
+	Note that this is true if you want to be using the original, Avdi
+    Grimm-authored version of Quarto. If, by contrast, you want fork
+    Quarto into your own GitHub repository, then you will want to
+    point to that.
+
+4. Now run `bundle install`, which will create a `Gemfile.lock`.
+
+5. Run `rake -T` to see the available tasks. 
+
+6. The task you care about is probably `rake deliverables`. (This is also the default.)
 
 ## Concepts
 
