@@ -217,7 +217,7 @@ Finally, you can add exclusion patterns in the Quarto configuration.
 
 ```ruby
 Quarto.configure do |config|
-  config.exclude_source("~*")
+  config.exclude_sources("~*")
 end
 ```
 
