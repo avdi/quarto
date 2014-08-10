@@ -14,7 +14,7 @@ module Quarto
   (setq org-babel-noweb-wrap-end ">>")
   (org-mode)
   (message (concat "Org version: " org-version))
-  (cd "<%= main.export_dir %>")
+  (message (concat "CWD: " (pwd)))
   (org-html-export-to-html
     <%= ORG_EXPORT_ASYNC %> <%= ORG_EXPORT_SUBTREE %>
     <%= ORG_EXPORT_VISIBLE %> <%= ORG_EXPORT_BODY_ONLY %>
@@ -67,6 +67,10 @@ END
       end
     end
 
+    def finalize_build(build)
+      task :prepare => "orgmode:vendor"
+    end
+
     def version
       "8.0.7"
     end
@@ -94,7 +98,9 @@ END
     def export_from_orgmode(export_file, source_file)
       language = language
       elisp = ERB.new(ORG_EXPORT_ELISP).result(binding)
+
       sh "emacs", *emacs_flags, *%W[--file #{source_file} --eval #{elisp}]
+      mv source_file.pathmap("%X.html"), export_file
     end
 
     def emacs_flags
@@ -130,7 +136,6 @@ END
         end
         normal_doc.css("div.imprint h2").remove
         normal_doc.css("div.dedication h2").remove
-        # normalize_document_structure(normal_doc)
         promote_headings(normal_doc)
       end
     end
@@ -142,32 +147,6 @@ END
       end
       title_h1 = doc.at_css("h1.title")
       title_h1.remove if title_h1
-    end
-
-    def normalize_document_structure(doc)
-      chapter_elts = doc.css("div.outline-2")
-      chapter_elts.each do |elt|
-        classes = elt["class"].to_s.split
-        unless (main.nonchapter_classes & classes).any?
-          elt.name = "section"
-          elt["class"] = "chapter"
-        end
-      end
-      section_elts = doc.css("div.outline-3")
-      section_elts.each do |elt|
-        elt.name = "section"
-        elt["class"] = "section"
-      end
-      subsection_elts = doc.css("div.outline-4")
-      subsection_elts.each do |elt|
-        elt.name = "section"
-        elt["class"] = "subsection"
-      end
-      subsubsection_elts = doc.css("div.outline-5")
-      subsubsection_elts.each do |elt|
-        elt.name = "section"
-        elt["class"] = "subsubsection"
-      end
     end
 
     def promote_headings(doc)

@@ -826,8 +826,11 @@ module Quarto
     def define_main_tasks
       task :default => :deliverables
 
+      desc "Prepare for battle! I mean bookbinding."
+      task :prepare
+
       desc "Export from source formats to HTML"
-      task :export => [*export_files]
+      task :export => [:prepare, *export_files]
 
       desc "Generate normalized XHTML versions of exports"
       task :signatures => [*signature_files]

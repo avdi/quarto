@@ -4,7 +4,7 @@ authors:
 - Avdi Grimm
 author: Avdi Grimm
 description: ''
-date: '2014-06-30T14:45:13-04:00'
+date: '2014-08-10T16:01:19-04:00'
 types:
 - book
 master_file: build/master/master.xhtml
@@ -26,6 +26,7 @@ children:
   signature_number: 1
   number: 1
   fascicle: build/fascicles/001-foreward.xhtml
+  numbered_name: 001-foreward
   children:
   - types:
     - toplevel
@@ -50,6 +51,7 @@ children:
   signature_number: 2
   number: 2
   fascicle: build/fascicles/002-preface.xhtml
+  numbered_name: 002-preface
   children:
   - types:
     - toplevel
@@ -74,6 +76,7 @@ children:
   signature_number: 3
   number: 3
   fascicle: build/fascicles/003-ch1.xhtml
+  numbered_name: 003-ch1
   children:
   - types:
     - toplevel
@@ -90,7 +93,7 @@ children:
   - signature
   id: signature-4
   signature_export: build/exports/ch2.html
-  signature_source: ch2.html
+  signature_source: ch2.org
   signature_file: build/signatures/ch2.xhtml
   signature_name: ch2
   signature_title: This the title of ch2.org
@@ -99,6 +102,7 @@ children:
   signature_number: 4
   number: 4
   fascicle: build/fascicles/004-ch2.xhtml
+  numbered_name: 004-ch2
   children:
   - types:
     - toplevel
@@ -124,6 +128,7 @@ children:
   signature_number: 5
   number: 5
   fascicle: build/fascicles/005-ch3-implicit.xhtml
+  numbered_name: 005-ch3-implicit
   children:
   - types:
     - toplevel
@@ -149,6 +154,7 @@ children:
   signature_number: 6
   number: 6
   fascicle: build/fascicles/006-ch4-implicit.xhtml
+  numbered_name: 006-ch4-implicit
   children:
   - types:
     - toplevel
@@ -174,6 +180,7 @@ children:
   signature_number: 7
   number: 7
   fascicle: build/fascicles/007-ch5.xhtml
+  numbered_name: 007-ch5
   children:
   - types:
     - toplevel
