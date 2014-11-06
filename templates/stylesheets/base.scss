@@ -14,6 +14,7 @@ html, p {
 
 body {
   margin: 0 0 0 0;
+  counter-reset: chapter 0;
 }
 
 img {
@@ -94,7 +95,7 @@ p.author {
   text-align: right;
 }
 
-pre {  
+pre {
   margin: 1em 1.3em;
   border-radius: 1ex;
   padding: 1ex;
@@ -322,27 +323,27 @@ a.footnote {
 /* titlepage, halftitlepage */
 
 .titlepage h1, .halftitlepage h1 { margin-bottom: 2em; }
-.titlepage h2, .halftitlepage h2 { 
-  font-size: 1.2em; 
-  margin-bottom: 3em; 
+.titlepage h2, .halftitlepage h2 {
+  font-size: 1.2em;
+  margin-bottom: 3em;
 }
 .titlepage h3, .halftitlepage h3 { font-size: 1em; margin-bottom: 3em; }
 .titlepage p, .halftitlepage p {
   font-size: 1.4em;
   font-weight: bold;
-  margin: 0; 
+  margin: 0;
   padding: 0;
 }
 
-section.chapter:first-of-type {
+div.signature:first-of-type {
   counter-reset: page 1;
 }
 
 /* chapter numbers */
 
-section.chapter { 
-  counter-increment: chapter; 
-  counter-reset: section; 
+section.chapter {
+  counter-increment: chapter;
+  counter-reset: section;
 }
 
 h1::before {
@@ -351,7 +352,7 @@ h1::before {
   text-align: right;
 }
 
-section.chapter h1::before { 
+section.chapter h1::before {
   content: "Chapter " counter(chapter) " \A";
 }
 
@@ -366,12 +367,12 @@ section.chapter h2 { counter-increment: section; counter-reset: sample; }
 
 section.chapter h2::before {
   color: lighten($heading_color, 40%);
-  content: counter(chapter) "." counter(section) " "; 
+  content: counter(chapter) "." counter(section) " ";
 }
 
 //h2 { string-set: header content();}
-section.chapter h2 { 
-  string-set: header "Section " counter(chapter) "." counter(section) ": " content(); 
+section.chapter h2 {
+  string-set: header "Section " counter(chapter) "." counter(section) ": " content();
 }
 
 .frontcover h1::before, .titlepage h1::before, .halftitlepage h1::before {
@@ -399,7 +400,7 @@ span.element, span.attribute {
 span.property { font-weight: bold }
 pre, code, span.css, span.value, span.declaration {
   color: $heading_color;
-  font-family: "Source Code Pro", "Inconsolata", "Anonymous Pro", 
+  font-family: "Source Code Pro", "Inconsolata", "Anonymous Pro",
     "DejaVu Sans Mono", "Lucida Console", "Lucida Sans Typewriter", monospace;
 }
 
