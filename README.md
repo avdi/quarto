@@ -244,10 +244,24 @@ You have the option to provide custom behavior for the following methods:
 - `define_tasks`: Your plugin has access to the Rake::DSL library for creating command line rake tasks. Use this method to define tasks that can be used to manipulate and output content necessary for your plugin to function. Rake allows you to access existing rake tasks so you may compose your part of the assembly process through existing tasks.
 
 ```ruby
-class TxtOutput < Quarto::Plugin
+module Quarto
+  class TxtOutput < Plugin
 
+  end
 end
 ```
+
+You can access your plugin through the Quarto config object:
+
+```ruby
+Quarto.configure do |config|
+  config.use :text_output
+end
+```
+
+Quarto will take the argument from the `config.use` call to determine the name of your plugin class. The argument `:text_output` will be translated to `"TextOutput"`
+
+When hooking into the config object, Quarto expects your plugin to be stored (using this example) in "quarto/text_output". Your plugin should be created under the Quarto namespace. Quarto will attempt to find it using `Quarto.const_get` meaning it will look inside its own namespace.
 
 ## Contributing
 
