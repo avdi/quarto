@@ -247,6 +247,25 @@ You have the option to provide custom behavior for the following methods:
 module Quarto
   class TxtOutput < Plugin
 
+    def enhance_build(build)
+      # alter the build object
+    end
+
+    def finalize_build(build)
+      # alter the build object
+    end
+
+    def define_tasks
+      # add rake tasks
+      desc "Generate TXT files from the source"
+      task :generate_txt => generate_text
+    end
+
+    # Add support methods as you need
+    def generate_text
+      #... your implementation
+    end
+
   end
 end
 ```
