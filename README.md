@@ -239,9 +239,9 @@ Start by creating a class for your plugin which inherits from `Quarto::Plugin`. 
 
 You have the option to provide custom behavior for the following methods:
 
-- `enhance_build(build_object)`
-- `finalize_build(build_object)`
-- `define_tasks`
+- `enhance_build(build_object)`: This method accepts the Quarto build object and will be used to affect the build process. See example below.
+- `finalize_build(build_object)`: This method also accepts the Quarto build object and hooks into the process after the build object has been initialized and processed through all plugins and their `enhance_build` methods.
+- `define_tasks`: Your plugin has access to the Rake::DSL library for creating command line rake tasks. Use this method to define tasks that can be used to manipulate and output content necessary for your plugin to function. Rake allows you to access existing rake tasks so you may compose your part of the assembly process through existing tasks.
 
 ```ruby
 class TxtOutput < Quarto::Plugin
