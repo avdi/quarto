@@ -231,6 +231,24 @@ Quarto.configure do |config|
 end
 ```
 
+## Building plugins
+
+Quarto offers the ability to alter the assembly line to generate alternative output.
+
+Start by creating a class for your plugin which inherits from `Quarto::Plugin`. Quarto will expect that your plugin has features for different aspects of the assembly line.
+
+You have the option to provide custom behavior for the following methods:
+
+- `enhance_build(build_object)`
+- `finalize_build(build_object)`
+- `define_tasks`
+
+```ruby
+class TxtOutput < Quarto::Plugin
+
+end
+```
+
 ## Contributing
 
 1. Fork it
