@@ -231,6 +231,57 @@ Quarto.configure do |config|
 end
 ```
 
+## Building plugins
+
+Quarto offers the ability to alter the assembly line to generate alternative output.
+
+Start by creating a class for your plugin which inherits from `Quarto::Plugin`. Quarto will expect that your plugin has features for different aspects of the assembly line.
+
+You have the option to provide custom behavior for the following methods:
+
+- `enhance_build(build_object)`: This method accepts the Quarto build object and will be used to affect the build process. See example below.
+- `finalize_build(build_object)`: This method also accepts the Quarto build object and hooks into the process after the build object has been initialized and processed through all plugins and their `enhance_build` methods.
+- `define_tasks`: Your plugin has access to the Rake::DSL library for creating command line rake tasks. Use this method to define tasks that can be used to manipulate and output content necessary for your plugin to function. Rake allows you to access existing rake tasks so you may compose your part of the assembly process through existing tasks.
+
+```ruby
+module Quarto
+  class TxtOutput < Plugin
+
+    def enhance_build(build)
+      # alter the build object
+    end
+
+    def finalize_build(build)
+      # alter the build object
+    end
+
+    def define_tasks
+      # add rake tasks
+      desc "Generate TXT files from the source"
+      task :generate_txt => generate_text
+    end
+
+    # Add support methods as you need
+    def generate_text
+      #... your implementation
+    end
+
+  end
+end
+```
+
+You can access your plugin through the Quarto config object:
+
+```ruby
+Quarto.configure do |config|
+  config.use :text_output
+end
+```
+
+Quarto will take the argument from the `config.use` call to determine the name of your plugin class. The argument `:text_output` will be translated to `"TextOutput"`
+
+When hooking into the config object, Quarto expects your plugin to be stored (using this example) in "quarto/text_output". Your plugin should be created under the Quarto namespace. Quarto will attempt to find it using `Quarto.const_get` meaning it will look inside its own namespace.
+
 ## Contributing
 
 1. Fork it
