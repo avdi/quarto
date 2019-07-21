@@ -10,7 +10,7 @@ About the name: "Quarto" is a bookbinding term, and this is my fourth attempt at
 
 Development on Quarto will necessarily occur in fits and starts, because I'll only be working on it actively while I'm writing a book.
 
-It is also very, very unsupported. Right now it exists to solve *my* problems... barely. If it solves your problems too that's fantastic, but I don't have time to help you get it working. Sorry!
+It is also very, very unsupported. Right now it exists to solve *my* problems... barely. If it solves your problems too that's fantastic, but I don't have time to help you get it working. available!
 
 ## Notable Features
 
@@ -41,7 +41,7 @@ Quarto depends on several external programs which you will need to install befor
 
 ## Getting Started
 
-*Note*: Quarto is availble as a Ruby gem, which you can install in the
+*Note*: Quarto is available as a Ruby gem, which you can install in the
 usual way (`gem install quarto`). But while the gem provides
 stability, it is laughably out of date. Indeed, installing the gem
 (instead of pointing to a GitHub repository) almost guarantees that
